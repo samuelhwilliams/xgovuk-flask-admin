@@ -1,0 +1,113 @@
+// GOV.UK Flask Admin - Custom Filter Layout
+// Extends MOJ Filter Layout with proper responsive behavior
+@use "govuk";
+
+// Action bar wrapper - fixed positioning on small screens
+.xgov-fa-filter-layout__action-bar {
+    // Clear floats from MOJ action bar
+    &::after {
+        content: "";
+        display: table;
+        clear: both;
+    }
+
+    // On mobile/tablet, prevent horizontal scrolling of action bar
+    @include govuk.govuk-media-query($until: desktop) {
+        // Ensure action bar doesn't scroll with table
+        position: relative;
+        z-index: 1;
+        background-color: govuk.$govuk-body-background-colour;
+
+        // Prevent the action bar from affecting table width
+        // Force it to be 100% width regardless of its content
+        width: 100%;
+        min-width: 0;
+    }
+}
+
+// Scrollable content wrapper - only wraps the table
+.xgov-fa-scrollable-content {
+    // Constrain width to prevent parent container from scrolling
+    // min-width: 0 allows the container to shrink below its content's natural width
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch; // Smooth scrolling on iOS
+
+    // Add scroll shadows for better UX
+    background:
+        linear-gradient(
+                to right,
+                govuk.$govuk-body-background-colour 30%,
+                rgba(255, 255, 255, 0)
+            )
+            scroll,
+        linear-gradient(to right, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0) 15px)
+            scroll,
+        linear-gradient(
+                to left,
+                govuk.$govuk-body-background-colour 30%,
+                rgba(255, 255, 255, 0)
+            )
+            scroll,
+        radial-gradient(
+                farthest-side at 100% 50%,
+                rgba(0, 0, 0, 0.2),
+                rgba(0, 0, 0, 0)
+            )
+            scroll;
+    background-repeat: no-repeat;
+    background-color: govuk.$govuk-body-background-colour;
+    background-size:
+        40px 100%,
+        15px 100%,
+        40px 100%,
+        15px 100%;
+    background-attachment: local, scroll, local, scroll;
+    background-position:
+        0 0,
+        0 0,
+        100% 0,
+        100% 0;
+
+    // Below desktop breakpoint, prevent table cells from wrapping
+    @include govuk.govuk-media-query($until: 1020px) {
+        .govuk-table__header,
+        .govuk-table__cell {
+            white-space: nowrap;
+        }
+    }
+}
+
+// Footer alignment within filter layout
+.xgov-fa-filter-footer {
+    // Ensure footer stays within the content area width on desktop
+    // when filter sidebar is present
+    @include govuk.govuk-media-query($from: desktop) {
+        // The footer should match the width of moj-filter-layout__content
+        // which has overflow: hidden and sits next to the floating filter
+        // No need for explicit width constraint - parent handles it
+        max-width: 100%;
+    }
+
+    // Center-align footer components when stacked on mobile/tablet
+    @include govuk.govuk-media-query($until: tablet) {
+        > div {
+            text-align: center !important;
+        }
+
+        // Make the page size form take only the width it needs
+        #page-size-form {
+            display: inline-block;
+        }
+    }
+}
+
+// Override MOJ's overflow-x behavior to prevent parent-level scrolling
+// MOJ sets overflow-x: auto which creates unwanted scrollbars
+// We only want scrolling at the table level (.xgov-fa-scrollable-content)
+.moj-filter-layout__content {
+    // Keep overflow: hidden for block formatting context (needed for float layout)
+    // But prevent horizontal scrolling at this level
+    overflow-x: hidden !important;
+}

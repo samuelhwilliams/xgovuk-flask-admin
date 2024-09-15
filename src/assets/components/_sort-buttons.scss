@@ -1,0 +1,70 @@
+/* Sort button modifiers
+ *
+ * Adapted from https://github.com/ukgov-equality-hub/ethnicity-facts-and-figures/blob/303c837a676e17653864cf6f2734b67bc8b0bc30/application/src/sass/components/_sort_buttons.scss#L9
+ *
+ * These are used for indicating that a link can be used to re-order
+ * a table by a particular column, in either ascending or descending order.
+ *
+ * The modifier classes should be added alongside the base component class
+ * from the GOV.UK Design System of `govuk-link`
+ *
+ * When un-sorted (`xgov-fa-link--sort`), the link includes both up and down
+ * arrows on the right, as an affordance to indicate what the link does.
+ *
+ * When sorted in a particular direction (`xgov-fa-link--sort-ascending` or
+ * `xgov-fa-link--sort-descending`), a single (larger) up or down arrow is shown.
+ *
+ * This implementation uses pseudo-elements with adequate padding
+ * to ensure arrows never overlap with text at any viewport size.
+ *
+ * FIXME: Probably want to switch over to Moj Frontend sortable-table styling for these at some point?
+ */
+
+.xgov-fa-link--sort,
+.xgov-fa-link--sort-ascending,
+.xgov-fa-link--sort-descending {
+    position: relative;
+    padding-right: 1.2em; // Enough space for arrows
+    white-space: nowrap; // Prevent text from wrapping into arrow space
+}
+
+// Unsorted state - show both arrows stacked vertically
+.xgov-fa-link--sort::after {
+    content: "\25B2\A\25BC"; // Up arrow, newline, down arrow
+    white-space: pre; // Preserve the newline
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.5em;
+    line-height: 1.2;
+    text-align: center;
+    width: 1em;
+    text-decoration: none;
+}
+
+// Ascending state - show single up arrow
+.xgov-fa-link--sort-ascending::after {
+    content: "\25B2"; // ▲
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.7em;
+    text-align: center;
+    width: 1em;
+    text-decoration: none;
+}
+
+// Descending state - show single down arrow
+.xgov-fa-link--sort-descending::after {
+    content: "\25BC"; // ▼
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.7em;
+    text-align: center;
+    width: 1em;
+    text-decoration: none;
+}

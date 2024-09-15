@@ -1,0 +1,115 @@
+{% macro menu(menu_root=None) %}
+  {% set is_main_nav = menu_root == None %}
+  {% if menu_root is none %}{% set menu_root = admin_view.admin.menu() %}{% endif %}
+
+  <nav>
+    <ul class="govuk-list">
+    {%- for item in menu_root %}
+      {%- if item.is_category() -%}
+        {% set children = item.get_children() %}
+        {%- if children %}
+          <h2 class="govuk-heading-s govuk-!-margin-top-4">{{ item.name }}</h2>
+          <ul class="govuk-list govuk-!-margin-bottom-4">
+          {%- for child in children -%}
+            {%- if child.is_category() -%}
+              {# THIS IS PROBABLY NOT SUPPORTED PROPERLY #}
+              {{ menu(menu_root=[child]) }}
+
+            {% else %}
+              <li>
+                <a
+                  class="govuk-link govuk-link--no-visited-state{% if child.is_active(admin_view) %} govuk-!-font-weight-bold{% endif %}"
+                  href="{{ child.get_url() }}"
+                  {% if child.target %}target="{{ child.target }}"{% endif %}
+                >
+                  {{ child.name }}
+                </a>
+              </li>
+            {%- endif %}
+          {%- endfor %}
+          </ul>
+        </li>
+        {% endif %}
+      {%- else %}
+        {%- if item.is_accessible() and item.is_visible() -%}
+          {% set class_name = item.get_class_name() %}
+          <li>
+            <a
+              class="govuk-link govuk-link--no-visited-state{% if item.is_active(admin_view) %} govuk-!-font-weight-bold{% endif %}"
+              href="{{ item.get_url() }}"
+              {% if item.target %} target="{{ item.target }}"{% endif %}
+            >
+              {{ item.name }}
+            </a>
+        </li>
+        {%- endif -%}
+      {% endif -%}
+    {% endfor %}
+    </ul>
+  </nav>
+{% endmacro %}
+
+{% macro menu_links(links=None) %}
+  {% if links is none %}{% set links = admin_view.admin.menu_links() %}{% endif %}
+  {% for item in links %}
+    {% set class_name = item.get_class_name() %}
+    {% if item.is_accessible() and item.is_visible() %}
+      <li{% if class_name %} class="{{ class_name }}"{% endif %}>
+        <a class="govuk-link govuk-link--no-visited-state" href="{{ item.get_url() }}"{% if item.target %} target="{{ item.target }}"{% endif %}>
+          {{ item.name }}</a>
+      </li>
+    {% endif %}
+  {% endfor %}
+{% endmacro %}
+
+{% macro build_service_navigation_items(menu_root=None) -%}
+  {% if menu_root is none %}{% set menu_root = admin_view.admin.menu() %}{% endif %}
+  {% set nav_items = [] %}
+  {% for item in menu_root %}
+    {% if item.is_category() %}
+      {# Handle category with children #}
+      {% set children = item.get_children() %}
+      {% if children %}
+        {% for child in children %}
+          {% if child.is_accessible() and child.is_visible() and not child.is_category() %}
+            {% set item_text = item.name ~ " - " ~ child.name %}
+            {% set _ = nav_items.append({
+              "href": child.get_url(),
+              "text": item_text,
+              "active": child.is_active(admin_view)
+            }) %}
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+    {% else %}
+      {# Handle non-category items (skip "Home") #}
+      {% if item.is_accessible() and item.is_visible() and item.name != "Home" %}
+        {% set _ = nav_items.append({
+          "href": item.get_url(),
+          "text": item.name,
+          "active": item.is_active(admin_view)
+        }) %}
+      {% endif %}
+    {% endif %}
+  {% endfor %}
+  {{- nav_items -}}
+{%- endmacro %}
+
+{% macro messages() %}
+  {% with messages = get_flashed_messages(with_categories=True) %}
+    {% if messages %}
+      {% for category, m in messages %}
+        {% if category %}
+          {# alert-error changed to alert-danger in bootstrap 3, mapping is for backwards compatibility #}
+          {% set mapping = {'message': 'info', 'error': 'danger'} %}
+          <div class="alert alert-{{ mapping.get(category, category) }} alert-dismissable">
+        {% else %}
+          <div class="alert alert-dismissable">
+        {% endif %}
+      <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+      {{ m }}
+      </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+{% endmacro %}

@@ -1,0 +1,76 @@
+name: Tests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    name: test ${{ matrix.env }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    permissions:
+      pull-requests: write
+    strategy:
+      fail-fast: false
+      matrix:
+        env: ['3.12', '3.13', '3.14']
+        os: [ubuntu-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Disable man-db triggers
+        run: |
+          # https://github.com/actions/runner-images/issues/10977
+          # Disables man-db triggers, which have been a cause of huge (but variable) delays in github action jobs
+          # completing; we're seeing pauses on this step of 120+ seconds in some rare cases.
+          echo "set man-db/auto-update false" | sudo debconf-communicate
+          sudo dpkg-reconfigure man-db
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Build node assets
+        run: npm run build
+
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Install Python
+        run: uv python install --python-preference only-managed ${{ matrix.env }}
+
+      - name: Install dependencies
+        run: uv sync --all-extras --dev --frozen
+
+      - name: Install Playwright browsers
+        run: uv run playwright install --with-deps chromium
+
+      - name: Run unit and integration tests
+        run: uv run pytest -k "unit or integration" --cov=xgov_flask_admin --cov-report=html --cov-report=term --cov-report=xml
+
+      - name: Run e2e tests
+        if: always()
+        run: uv run pytest -k "e2e"
+
+      - name: Upload coverage HTML report
+        if: always() && matrix.env == '3.14'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-html
+          path: htmlcov/
+
+      - name: Coverage comment
+        if: github.event_name == 'pull_request' && matrix.env == '3.14'
+        uses: MishaKav/pytest-coverage-comment@main
+        with:
+          pytest-xml-coverage-path: ./coverage.xml
+          title: Coverage Report
+          badge-title: Coverage

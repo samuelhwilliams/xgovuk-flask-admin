@@ -1,0 +1,54 @@
+{#
+  Template for GOV.UK Select with Search component
+
+  Based on the select-with-search component from govuk_publishing_components:
+  https://github.com/alphagov/govuk_publishing_components/blob/main/app/views/govuk_publishing_components/components/_select_with_search.html.erb
+
+  Uses Choices.js for progressive enhancement:
+  https://github.com/Choices-js/Choices
+
+  This template implements GOV.UK form group structure with select-with-search enhancement.
+  The JavaScript and CSS are adapted from govuk_publishing_components (see those files for details).
+  The template structure itself is custom for Flask-Admin/WTForms/Jinja2.
+#}
+
+<div class="govuk-form-group{% if params.errorMessage %} govuk-form-group--error{% endif %} gem-c-select-with-search">
+  <label class="govuk-label{% if params.label.classes %} {{ params.label.classes }}{% endif %}" for="{{ params.id }}">
+    {{ params.label.text }}
+  </label>
+
+  {% if params.hint %}
+  <div id="{{ params.id }}-hint" class="govuk-hint">
+    {{ params.hint.text }}
+  </div>
+  {% endif %}
+
+  {% if params.errorMessage %}
+  <p id="{{ params.id }}-error" class="govuk-error-message">
+    <span class="govuk-visually-hidden">Error:</span> {{ params.errorMessage.text }}
+  </p>
+  {% endif %}
+
+  <select
+    class="govuk-select{% if params.errorMessage %} govuk-select--error{% endif %}"
+    id="{{ params.id }}"
+    name="{{ params.name }}"
+    {% if params.multiple %}multiple{% endif %}
+    data-module="select-with-search"
+    {% if params.hint %}aria-describedby="{{ params.id }}-hint{% if params.errorMessage %} {{ params.id }}-error{% endif %}"{% elif params.errorMessage %}aria-describedby="{{ params.id }}-error"{% endif %}
+    {% for attr, value in params.attributes.items() %}
+      {# Skip 'multiple' as it's already handled above #}
+      {% if attr != 'multiple' %}
+        {% if value == attr %}
+          {{ attr }}
+        {% else %}
+          {{ attr }}="{{ value }}"
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+  >
+    {% for item in params.select_items %}
+    <option value="{{ item.value }}"{% if item.selected %} selected{% endif %}>{{ item.text }}</option>
+    {% endfor %}
+  </select>
+</div>

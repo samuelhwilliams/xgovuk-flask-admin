@@ -1,0 +1,83 @@
+name: Publish
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Build node assets
+        run: npm run build
+
+      - uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+          prune-cache: false
+          cache-dependency-glob: |
+            **/uv.lock
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Set SOURCE_DATE_EPOCH for reproducible builds
+        run: echo "SOURCE_DATE_EPOCH=$(git log -1 --pretty=%ct)" >> $GITHUB_ENV
+
+      - name: Build package
+        run: uv build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: ./dist
+
+  create-release:
+    needs: [build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: ./dist
+
+      - name: Create GitHub Release
+        run: >
+          gh release create --draft --repo ${{ github.repository }}
+          ${{ github.ref_name }} dist/*
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+  publish-pypi:
+    needs: [build]
+    environment:
+      name: pypi
+      url: https://pypi.org/project/xgov-flask-admin/${{ github.ref_name }}
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: ./dist
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/

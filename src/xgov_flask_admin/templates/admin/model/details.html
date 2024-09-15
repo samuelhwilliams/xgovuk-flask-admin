@@ -1,0 +1,35 @@
+{% extends 'admin/master.html' %}
+{% import 'admin/lib.html' as lib with context %}
+{% from 'govuk_frontend_jinja/components/back-link/macro.html' import govukBackLink %}
+{% from 'govuk_frontend_jinja/components/summary-list/macro.html' import govukSummaryList %}
+
+{% block beforeContent %}
+  {{ govukBackLink(params={"href": return_url}) }}
+{% endblock %}
+
+{% block action_panel %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-l">{{ admin_view.name }} details</h1>
+
+      {% block details_table %}
+        {% set summary_rows = [] %}
+        {% for c, name in details_columns %}
+          {% set escaped_value = get_value(model, c)|string|e %}
+          {% set _ = summary_rows.append({
+            "key": {
+              "text": name
+            },
+            "value": {
+              "html": escaped_value|replace("\n", "<br>"|safe)|safe
+            }
+          }) %}
+        {% endfor %}
+
+        {{ govukSummaryList({
+          "rows": summary_rows
+        }) }}
+      {% endblock %}
+    </div>
+  </div>
+{% endblock %}

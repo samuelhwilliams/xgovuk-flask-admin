@@ -1,0 +1,55 @@
+@use "govuk" with (
+    $govuk-new-organisation-colours: true,
+    $govuk-assets-path: "assets/",
+    $govuk-images-path: "images/",
+    $govuk-fonts-path: "fonts/",
+    $govuk-brand-colour: #912b88,
+    $govuk-page-width: 1240px
+);
+@forward "moj/all" with (
+    $moj-assets-path: ""
+);
+@use "accessible-autocomplete";
+
+@use "components/sort-buttons";
+@use "components/filters";
+@use "components/filter-layout";
+@use "components/select-with-search";
+
+.xgov-fa-table__cell--compact {
+    padding-top: 3px;
+    padding-bottom: 3px;
+}
+
+.xgov-fa-table__header--checkbox {
+    @include govuk.govuk-responsive-padding(
+        $direction: "top",
+        $responsive-spacing-point: 0
+    );
+    width: 50px;
+}
+
+.xgov-fa-table__header--hint {
+    @include govuk.govuk-font-size($size: 16);
+    @include govuk.govuk-typography-weight-regular();
+    @include govuk.govuk-responsive-margin(
+        $direction: "top",
+        $responsive-spacing-point: 1
+    );
+    @include govuk.govuk-responsive-margin(
+        $direction: "bottom",
+        $responsive-spacing-point: 0
+    );
+    color: govuk.$govuk-secondary-text-colour;
+
+    display: block;
+}
+
+.xgov-fa-pagination-wrapper {
+    display: flex;
+    justify-content: center;
+}
+
+.xgov-fa-page-size-select {
+    min-width: 0px;
+}

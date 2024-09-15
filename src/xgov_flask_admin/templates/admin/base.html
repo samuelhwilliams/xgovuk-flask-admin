@@ -1,0 +1,85 @@
+{% extends 'govuk_frontend_jinja/template.html' %}
+{% from 'govuk_frontend_jinja/components/service-navigation/macro.html' import govukServiceNavigation %}
+{% import 'admin/layout.html' as layout with context %}
+
+{% set containerClasses = '' %}
+{% set mainClasses = '' %}
+{% set assetPath = url_for('xgov_flask_admin.static', filename='').rstrip('/') %}
+{% set govukRebrand = true %}
+
+{% block head %}
+  {{ xgov_flask_admin_include_css() | safe }}
+{% endblock head %}
+
+{% block header %}
+  {{ govukHeader({"classes": "govuk-header--full-width-border"}) }}
+
+  {% set service_nav_items = [] %}
+  {% for item in admin_view.admin.menu() %}
+    {% if item.is_category() %}
+      {% set children = item.get_children() %}
+      {% if children %}
+        {% for child in children %}
+          {% if child.is_accessible() and child.is_visible() and not child.is_category() %}
+            {% set item_text = item.name ~ " - " ~ child.name %}
+            {% set _ = service_nav_items.append({
+              "href": child.get_url(),
+              "text": item_text,
+              "active": child.is_active(admin_view)
+            }) %}
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+    {% else %}
+      {% if item.is_accessible() and item.is_visible() and item.name != "Home" %}
+        {% set _ = service_nav_items.append({
+          "href": item.get_url(),
+          "text": item.name,
+          "active": item.is_active(admin_view)
+        }) %}
+      {% endif %}
+    {% endif %}
+  {% endfor %}
+
+  {{ govukServiceNavigation({
+    "serviceName": xgov_flask_admin_service_name,
+    "serviceUrl": url_for(admin_view.admin.endpoint ~ '.index'),
+    "navigation": service_nav_items
+  }) }}
+{% endblock %}
+
+{% block main %}
+  <div class="govuk-width-container {%- if containerClasses %} {{ containerClasses }}{% endif %}">
+    {% block beforeContent %}{% endblock %}
+
+    <main class="govuk-main-wrapper {%- if mainClasses %} {{ mainClasses }}{% endif %}" id="main-content" {%- if mainLang %} lang="{{ mainLang }}"{% endif %}>
+      {% block action_panel %}
+        <div class="govuk-grid-row">
+          <div class="govuk-grid-column-two-thirds">
+            <h1 class="govuk-heading-l">Admin dashboard</h1>
+            <p class="govuk-body">
+              Use the navigation above to manage your data:
+            </p>
+            <ul class="govuk-list govuk-list--bullet">
+              <li>view and search records</li>
+              <li>create, edit or delete entries</li>
+              <li>filter and export data</li>
+            </ul>
+            <p class="govuk-body">
+              Override blocks in this template to customise the index for your service.
+            </p>
+          </div>
+        </div>
+      {% endblock %}
+    </main>
+  </div>
+{% endblock %}
+
+{% block bodyEnd %}
+  {{ xgov_flask_admin_include_js() | safe }}
+  {% if admin_view.extra_js %}
+      {% for js_url in admin_view.extra_js %}
+          <script {{ admin_csp_nonce_attribute }} src="{{ js_url }}" type="text/javascript"></script>
+      {% endfor %}
+  {% endif %}
+{% endblock bodyEnd %}

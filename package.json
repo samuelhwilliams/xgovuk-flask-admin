@@ -1,0 +1,25 @@
+{
+  "name": "xgov-flask-admin",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@ministryofjustice/frontend": "^6.0.0",
+    "accessible-autocomplete": "3.0.1",
+    "choices.js": "^11.1.0",
+    "govuk-frontend": "^5.12.0",
+    "moment": "^2.30.1"
+  },
+  "devDependencies": {
+    "prettier": "3.6.2",
+    "prettier-plugin-jinja-template": "2.1.0",
+    "sass": "1.89.2",
+    "sass-embedded": "^1.93.2",
+    "vite": "6.3.5",
+    "vite-plugin-static-copy": "3.1.1"
+  }
+}

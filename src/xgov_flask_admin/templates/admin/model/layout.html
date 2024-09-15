@@ -1,0 +1,519 @@
+{% from 'govuk_frontend_jinja/components/accordion/macro.html' import govukAccordion %}
+{% from 'govuk_frontend_jinja/components/radios/macro.html' import govukRadios %}
+{% from 'govuk_frontend_jinja/components/input/macro.html' import govukInput %}
+{% from 'govuk_frontend_jinja/components/select/macro.html' import govukSelect %}
+{% from 'govuk_frontend_jinja/components/date-input/macro.html' import govukDateInput %}
+{% from 'govuk_frontend_jinja/components/button/macro.html' import govukButton %}
+{% from 'govuk_frontend_jinja/components/details/macro.html' import govukDetails %}
+{% from 'govuk_frontend_jinja/components/pagination/macro.html' import govukPagination %}
+
+{# Helper macro to get active filter value #}
+{% macro get_active_filter_value(active_filters, filter_index) -%}
+  {%- if active_filters -%}
+    {%- for filter_data in active_filters -%}
+      {# Handle both 3-tuple (old format) and 4-tuple (new format with operation) #}
+      {%- if filter_data|length == 4 -%}
+        {%- set idx, flt_name, operation, value = filter_data -%}
+      {%- else -%}
+        {%- set idx, flt_name, value = filter_data -%}
+      {%- endif -%}
+      {%- if idx == filter_index -%}{{ value }}{%- endif -%}
+    {%- endfor -%}
+  {%- endif -%}
+{%- endmacro %}
+
+{# Render individual filter input based on filter type #}
+{% macro render_filter_input(filter, filter_key, current_value, filters) %}
+  {% if filter.type == 'datepicker' %}
+    {# GOV.UK Date Input - split into day/month/year fields #}
+    {% set date_parts = current_value.split('-') if current_value and current_value.strip() else [] %}
+    {% set day_value = date_parts[2] if date_parts|length == 3 else '' %}
+    {% set month_value = date_parts[1] if date_parts|length == 3 else '' %}
+    {% set year_value = date_parts[0] if date_parts|length == 3 else '' %}
+
+    {{ govukDateInput({
+      "id": filter_key,
+      "namePrefix": filter_key,
+      "fieldset": {
+        "legend": {
+          "text": filter.operation,
+          "classes": "govuk-fieldset__legend--s"
+        }
+      },
+      "hint": {
+        "text": "For example, 27 3 2024"
+      },
+      "items": [
+        {
+          "name": "day",
+          "classes": "govuk-input--width-2",
+          "value": day_value
+        },
+        {
+          "name": "month",
+          "classes": "govuk-input--width-2",
+          "value": month_value
+        },
+        {
+          "name": "year",
+          "classes": "govuk-input--width-4",
+          "value": year_value
+        }
+      ]
+    }) }}
+
+  {% elif filter.type == 'datetimepicker' %}
+    {# For datetime, provide text input with format hint #}
+    {{ govukInput({
+      "id": filter_key,
+      "name": filter_key,
+      "label": {"text": filter.operation, "classes": "govuk-label--s"},
+      "hint": {"text": "Format: YYYY-MM-DD HH:MM:SS, for example 2024-03-27 14:30:00"},
+      "value": current_value if current_value else "",
+      "classes": "govuk-input--width-20"
+    }) }}
+
+  {% elif filter.options %}
+    {# Select dropdown for filters with predefined options #}
+    {% set select_items = [{"value": "", "text": "Select..."}] %}
+    {# Get the actual filter object from filters list using filter.index #}
+    {% set actual_filter = filters[filter.index] if filters and filter.index < filters|length else none %}
+    {% for opt_value, opt_label in filter.options %}
+      {# For enum filters, Flask-Admin provides enum values in options but expects enum names in form submission #}
+      {# Check if the actual filter object has enum_class attribute (for EnumEqualFilter, etc.) #}
+      {% if actual_filter and actual_filter.enum_class is defined and actual_filter.enum_class is not none %}
+        {# opt_value contains the enum value (e.g., "red") from column.type.enums #}
+        {# We need to find the enum name (e.g., "RED") for form submission #}
+        {# And use the enum value (e.g., "red") for display #}
+        {% set ns = namespace(enum_name=opt_value, display_label=opt_value) %}
+        {% for member in actual_filter.enum_class %}
+          {% if member.value == opt_value or member.name == opt_value %}
+            {% set ns.enum_name = opt_value %}
+            {% set ns.display_label = member.value %}
+          {% endif %}
+        {% endfor %}
+        {% set is_selected = (current_value and current_value.strip() == ns.enum_name|string) %}
+        {% set _ = select_items.append({"value": ns.enum_name, "text": ns.display_label, "selected": is_selected}) %}
+      {% else %}
+        {% set is_selected = (current_value and current_value.strip() == opt_value|string) %}
+        {% set _ = select_items.append({"value": opt_value, "text": opt_label, "selected": is_selected}) %}
+      {% endif %}
+    {% endfor %}
+
+    {{ govukSelect({
+      "id": filter_key,
+      "name": filter_key,
+      "label": {"text": filter.operation, "classes": "govuk-label--s"},
+      "items": select_items
+    }) }}
+
+  {% else %}
+    {# Standard text input for text/number filters #}
+    {% set input_params = {
+      "id": filter_key,
+      "name": filter_key,
+      "label": {"text": filter.operation, "classes": "govuk-label--s"},
+      "value": current_value if current_value else "",
+      "classes": "govuk-input--width-20"
+    } %}
+
+    {# Add inputmode for numeric filters #}
+    {% if filter.type in ['int', 'float'] %}
+      {% set _ = input_params.update({"inputmode": "numeric", "pattern": "[0-9]*"}) %}
+    {% endif %}
+
+    {{ govukInput(input_params) }}
+  {% endif %}
+{% endmacro %}
+
+{# Render all filters for a given filter group #}
+{% macro render_filter_group_content(filter_name, filter_list, active_filters, filters) %}
+  <div class="govuk-form-group">
+    <fieldset class="govuk-fieldset">
+      <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">
+        Filter by {{ filter_name }}
+      </legend>
+
+      {% for filter in filter_list %}
+        {% set filter_key = "flt" ~ filter.index ~ "_" ~ filter.arg %}
+        {% set current_value = get_active_filter_value(active_filters, filter.index)|trim %}
+
+        <div class="govuk-!-margin-bottom-4">
+          {{ render_filter_input(filter, filter_key, current_value, filters) }}
+        </div>
+      {% endfor %}
+    </fieldset>
+  </div>
+{% endmacro %}
+
+{# Main filter form - works without JavaScript #}
+{% macro filter_form() %}
+<form id="filter_form" method="GET" action="{{ return_url }}">
+  {# Submit button #}
+  {{ govukButton({
+    "text": "Apply filters",
+    "preventDoubleClick": true,
+  }) }}
+
+  {# Preserve existing query state #}
+  {% for arg_name, arg_value in extra_args.items() %}
+    <input type="hidden" name="{{ arg_name }}" value="{{ arg_value }}">
+  {% endfor %}
+  {% if sort_column is not none %}
+    <input type="hidden" name="sort" value="{{ sort_column }}">
+  {% endif %}
+  {% if sort_desc %}
+    <input type="hidden" name="desc" value="1">
+  {% endif %}
+  {% if page_size != default_page_size %}
+    <input type="hidden" name="page_size" value="{{ page_size }}">
+  {% endif %}
+
+  {# Search box at top of filter form #}
+  {% if search_supported %}
+    {{ govukInput({
+      "id": "search",
+      "name": "search",
+      "type": "search",
+      "label": {
+        "text": "Search",
+        "classes": "govuk-label--m govuk-!-margin-bottom-0"
+      },
+      "hint": {
+        "text": ("In " ~ search_placeholder) if search_placeholder else "Search records"
+      },
+      "value": search if search else "",
+    }) }}
+  {% endif %}
+
+  {# Render filter groups #}
+  {% if filter_groups %}
+    {% if filter_groups|length > 2 %}
+      {# Use Accordion for multiple filter groups #}
+      {% set accordion_items = [] %}
+      {% for filter_name, filter_list in filter_groups.items() %}
+        {% set filter_content %}
+          {{ render_filter_group_content(filter_name, filter_list, active_filters, filters) }}
+        {% endset %}
+        {% set _ = accordion_items.append({
+          "heading": {"text": filter_name},
+          "content": {"html": filter_content}
+        }) %}
+      {% endfor %}
+
+      {{ govukAccordion({
+        "id": "filter-accordion",
+        "items": accordion_items
+      }) }}
+
+    {% else %}
+      {# Simple rendering for 1-2 filter groups #}
+      {% for filter_name, filter_list in filter_groups.items() %}
+        {{ render_filter_group_content(filter_name, filter_list, active_filters, filters) }}
+      {% endfor %}
+    {% endif %}
+  {% endif %}
+</form>
+{% endmacro %}
+
+{# Search form #}
+{% macro search_form() %}
+<form method="GET" action="{{ return_url }}" class="govuk-!-margin-bottom-6">
+  {# Hidden fields to preserve state #}
+  {% for flt_name, flt_value in filter_args.items() %}
+    <input type="hidden" name="{{ flt_name }}" value="{{ flt_value }}">
+  {% endfor %}
+  {% if page_size != default_page_size %}
+    <input type="hidden" name="page_size" value="{{ page_size }}">
+  {% endif %}
+  {% for arg_name, arg_value in extra_args.items() %}
+    <input type="hidden" name="{{ arg_name }}" value="{{ arg_value }}">
+  {% endfor %}
+  {% if sort_column is not none %}
+    <input type="hidden" name="sort" value="{{ sort_column }}">
+  {% endif %}
+  {% if sort_desc %}
+    <input type="hidden" name="desc" value="1">
+  {% endif %}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {{ govukInput({
+        "id": "search",
+        "name": "search",
+        "type": "search",
+        "label": {
+          "text": "Search",
+          "classes": "govuk-label--s"
+        },
+        "hint": {
+          "text": search_placeholder if search_placeholder else "Search records"
+        },
+        "value": search if search else ""
+      }) }}
+    </div>
+  </div>
+
+  <div class="govuk-button-group">
+    {{ govukButton({
+      "text": "Search",
+      "preventDoubleClick": true
+    }) }}
+    {% if search %}
+      <a href="{{ clear_search_url }}" class="govuk-link govuk-link--no-visited-state">
+        Clear search
+      </a>
+    {% endif %}
+  </div>
+</form>
+{% endmacro %}
+
+{# Page size selector #}
+{% macro page_size_form(generator, page_size_options) %}
+<form method="GET" action="{{ return_url }}" class="govuk-!-display-inline-block" id="page-size-form">
+  {# Preserve filters and search #}
+  {% for flt_name, flt_value in filter_args.items() %}
+    <input type="hidden" name="{{ flt_name }}" value="{{ flt_value }}">
+  {% endfor %}
+  {% if search %}
+    <input type="hidden" name="search" value="{{ search }}">
+  {% endif %}
+  {% if sort_column is not none %}
+    <input type="hidden" name="sort" value="{{ sort_column }}">
+  {% endif %}
+  {% if sort_desc %}
+    <input type="hidden" name="desc" value="1">
+  {% endif %}
+  {% for arg_name, arg_value in extra_args.items() %}
+    <input type="hidden" name="{{ arg_name }}" value="{{ arg_value }}">
+  {% endfor %}
+
+  {% set select_items = [] %}
+  {% for option in page_size_options %}
+    {% set is_selected = (page_size == option) %}
+    {% set _ = select_items.append({
+      "value": option,
+      "text": option ~ " per page",
+      "selected": is_selected
+    }) %}
+  {% endfor %}
+
+  {{ govukSelect({
+    "id": "page-size",
+    "name": "page_size",
+    "label": {"text": "Items per page", "classes": "govuk-label--s govuk-visually-hidden"},
+    "classes": "xgov-fa-page-size-select",
+    "items": select_items,
+    "attributes": {"onchange": "this.form.submit()"}
+  }) }}
+
+  <noscript>
+    {{ govukButton({
+      "text": "Update",
+      "classes": "govuk-button--secondary"
+    }) }}
+  </noscript>
+</form>
+{% endmacro %}
+
+{# Export options #}
+{% macro export_options() %}
+  <h3 class="govuk-heading-s govuk-visually-hidden">Export</h3>
+  <ul class="govuk-list">
+    {% for export_type in admin_view.export_types %}
+      <li>
+        <a href="{{ get_url('.export', export_type=export_type, **request.args) }}"
+           class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0"
+           download>
+          Download {{ count }} results as {{ export_type|upper }}
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+{% endmacro %}
+
+{# MOJ Filter Layout - wraps filter sidebar and content area with actions and pagination #}
+{% macro mojFilterLayout() %}
+  <div class="moj-filter-layout">
+    <div class="moj-filter-layout__filter">
+      {% if search_supported or filters %}
+      <div class="moj-filter" data-module="moj-filter">
+        <div class="moj-filter__header">
+          <div class="moj-filter__header-title">
+            <h2 class="govuk-heading-m">Filter</h2>
+          </div>
+          <div class="moj-filter__header-action">
+          </div>
+        </div>
+        <div class="moj-filter__content">
+          {# Selected filters section #}
+          {% if active_filters or search %}
+          <div class="moj-filter__selected">
+            <div class="moj-filter__selected-heading">
+              <div class="moj-filter__heading-title">
+                <h2 class="govuk-heading-m">Selected filters</h2>
+              </div>
+              <div class="moj-filter__heading-action">
+                <p><a class="govuk-link govuk-link--no-visited-state" href="{{ clear_search_url }}">Clear filters</a></p>
+              </div>
+            </div>
+
+            {# Search filter tag - remove search while preserving all filters #}
+            {% if search %}
+            <h3 class="govuk-heading-s govuk-!-margin-bottom-0">Search</h3>
+            <ul class="moj-filter-tags">
+              <li>
+                <a class="moj-filter__tag" href="{{ admin_view._get_remove_search_url(filter_args, sort_column, sort_desc, page_size, default_page_size, extra_args) }}">
+                  <span class="govuk-visually-hidden">Remove this filter</span>
+                  {{ search }}
+                </a>
+              </li>
+            </ul>
+            {% endif %}
+
+            {# Active filter tags grouped by filter name #}
+            {% if active_filters %}
+              {% set ns = namespace(current_filter_name='') %}
+              {% for filter_data in active_filters %}
+                {# Handle both 3-tuple (old format) and 4-tuple (new format with operation) #}
+                {% if filter_data|length == 4 %}
+                  {% set idx, flt_name, operation, value = filter_data %}
+                {% else %}
+                  {% set idx, flt_name, value = filter_data %}
+                  {% set operation = None %}
+                {% endif %}
+
+                {% if ns.current_filter_name != flt_name %}
+                  {% if ns.current_filter_name != '' %}
+                    </ul>
+                  {% endif %}
+                  {% set ns.current_filter_name = flt_name %}
+                  <h3 class="govuk-heading-s govuk-!-margin-bottom-0">{{ flt_name }}</h3>
+                  <ul class="moj-filter-tags">
+                {% endif %}
+                <li>
+                  <a class="moj-filter__tag" href="{{ admin_view._get_remove_filter_url(loop.index0, active_filters, return_url, sort_column, sort_desc, search, page_size, default_page_size, extra_args) }}">
+                    <span class="govuk-visually-hidden">Remove this filter</span>
+                    {% if operation %}{{ operation }}: {% endif %}{{ value }}
+                  </a>
+                </li>
+                {% if loop.last %}
+                  </ul>
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+          </div>
+          {% endif %}
+
+          {# Filter options #}
+          <div class="moj-filter__options">
+            {{ filter_form() }}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="moj-filter-layout__content">
+      {# Action bar wrapper - fixed, doesn't scroll with table #}
+      <div class="xgov-fa-filter-layout__action-bar">
+        <div class="moj-action-bar">
+          {% if search_supported or filters %}
+          <div class="moj-action-bar__filter">
+            {# Filter toggle button created by FilterToggleButton JS #}
+          </div>
+          {% endif %}
+
+          {# Combined actions menu - only show if there are any actions available #}
+          {% if actions or admin_view.can_create or admin_view.can_export %}
+            <div class="moj-button-menu govuk-!-margin-bottom-6" data-module="moj-button-menu">
+              {# Create button (if enabled) #}
+              {% if admin_view.can_create %}
+                <a href="{{ url_for('.create_view', url=return_url) }}"
+                   class="govuk-button govuk-button--secondary moj-button-menu__item">
+                  Create new {{ admin_view.name|lower }}
+                </a>
+              {% endif %}
+
+              {# Bulk actions (if available) #}
+              {% if actions %}
+                {% for value, text in actions %}
+                  {{ govukButton({
+                    "name": "action",
+                    "text": text,
+                    "type": "submit",
+                    "classes": "moj-button-menu__item govuk-button--secondary",
+                    "attributes": {"form": "bulk-action-form", "value": value}
+                  }) }}
+                {% endfor %}
+              {% endif %}
+
+              {# Export buttons (if enabled) #}
+              {% if admin_view.can_export %}
+                {% for export_type in admin_view.export_types %}
+                  <a href="{{ get_url('.export', export_type=export_type, **request.args) }}"
+                     class="govuk-button govuk-button--secondary moj-button-menu__item"
+                     download>
+                    Download {{ count }} results as {{ export_type|upper }}
+                  </a>
+                {% endfor %}
+              {% endif %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      {# Scrollable content wrapper - only wraps the table #}
+      <div class="xgov-fa-scrollable-content">
+        {# Bulk actions form - wrap table if actions are enabled #}
+        {% if actions %}
+          <form method="POST" action="{{ get_url('.action_view') }}" id="bulk-action-form">
+            {% if action_form.csrf_token is defined and action_form.csrf_token %}
+              {{ action_form.csrf_token }}
+            {% elif csrf_token is defined and csrf_token %}
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            {% endif %}
+            <input type="hidden" name="url" value="{{ return_url }}">
+        {% endif %}
+
+        {# Content area - caller() allows list.html to inject the table #}
+        {{ caller() }}
+
+        {% if actions %}
+          </form>
+        {% endif %}
+      </div>
+
+      {# Footer - pagination, result count, page size selector #}
+      {% set hasPagination = num_pages and num_pages > 1 %}
+      <div class="govuk-grid-row xgov-fa-filter-footer">
+        <div class="govuk-grid-column-one-{% if hasPagination %}quarter{% else %}half{% endif %}">
+          <p class="govuk-body govuk-!-margin-top-2">
+            Showing
+            {% if count is not none %}
+              {{ count }} result{{ 's' if count != 1 }}
+            {% else %}
+              results
+            {% endif %}
+          </p>
+        </div>
+        {# Pagination - centered within column #}
+        {% if hasPagination %}
+          <div class="govuk-grid-column-one-half">
+            <div class="xgov-fa-pagination-wrapper">
+              {{ govukPagination(govuk_pagination_data_builder(page, num_pages, pager_url)) }}
+            </div>
+          </div>
+        {% endif %}
+        <div class="govuk-grid-column-one-{% if hasPagination %}quarter{% else %}half{% endif %} govuk-!-text-align-right">
+          {# Page size selector #}
+          {% if can_set_page_size %}
+            {{ page_size_form(page_size_url, admin_view.page_size_options) }}
+          {% endif %}
+        </div>
+      </div>
+
+    </div> {# end moj-filter-layout__content #}
+
+  </div> {# end moj-filter-layout #}
+{% endmacro %}

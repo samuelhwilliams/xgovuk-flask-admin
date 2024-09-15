@@ -1,0 +1,451 @@
+{% extends 'admin/master.html' %}
+{% import 'admin/lib.html' as lib with context %}
+{% import 'admin/static.html' as admin_static with context%}
+{% import 'admin/model/layout.html' as model_layout with context %}
+{% import 'admin/actions.html' as actionlib with context %}
+{% import 'admin/model/row_actions.html' as row_actions with context %}
+
+{% from 'govuk_frontend_jinja/components/button/macro.html' import govukButton %}
+{% from 'govuk_frontend_jinja/components/pagination/macro.html' import govukPagination %}
+{% from 'govuk_frontend_jinja/components/notification-banner/macro.html' import govukNotificationBanner %}
+{% from 'govuk_frontend_jinja/components/details/macro.html' import govukDetails %}
+{% from 'govuk_frontend_jinja/components/select/macro.html' import govukSelect %}
+{% from 'govuk_frontend_jinja/components/tag/macro.html' import govukTag %}
+
+{% block head %}
+  {{ super() }}
+  {{ lib.form_css() }}
+{% endblock %}
+
+{% block action_panel %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+  {# Confirmation banner for bulk actions - shown at top #}
+  {% if actions and request.args.get('_confirm_action') %}
+    {% set action_to_confirm = request.args.get('_confirm_action') %}
+    {% set action_name = dict(actions).get(action_to_confirm, action_to_confirm) %}
+    {% set confirmation_message = actions_confirmation.get(action_to_confirm, 'Are you sure you want to perform this action?') %}
+
+    {% set confirmation_html %}
+      {% set cancel_url = request.base_url %}
+      {% if request.args %}
+        {% set cancel_params = [] %}
+        {% for key, value in request.args.items(multi=True) %}
+          {% if key not in ['_confirm_action', 'rowid'] %}
+            {% set _ = cancel_params.append((key, value)) %}
+          {% endif %}
+        {% endfor %}
+        {% if cancel_params %}
+          {% set cancel_url = cancel_url + '?' + cancel_params|map('join', '=')|join('&') %}
+        {% endif %}
+      {% endif %}
+
+      <h3 class="govuk-notification-banner__heading">
+        Confirm: {{ action_name }}
+      </h3>
+      <p class="govuk-body">{{ confirmation_message }}</p>
+      <p class="govuk-body"><strong>{{ request.args.getlist('rowid')|length }} item(s) selected</strong></p>
+
+      <form method="POST" action="{{ get_url('.action_view') }}" style="display: inline;">
+        {% if action_form.csrf_token is defined and action_form.csrf_token %}
+          {{ action_form.csrf_token }}
+        {% elif csrf_token is defined and csrf_token %}
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        {% endif %}
+        <input type="hidden" name="action" value="{{ action_to_confirm }}">
+        {% set clean_return_url = request.base_url %}
+        {% if request.args %}
+          {% set return_params = [] %}
+          {% for key, value in request.args.items(multi=True) %}
+            {% if key not in ['_confirm_action', 'rowid'] %}
+              {% set _ = return_params.append((key, value)) %}
+            {% endif %}
+          {% endfor %}
+          {% if return_params %}
+            {% set clean_return_url = clean_return_url + '?' + return_params|map('join', '=')|join('&') %}
+          {% endif %}
+        {% endif %}
+        <input type="hidden" name="url" value="{{ clean_return_url }}">
+
+        {# Include the rowids from the query string #}
+        {% for rowid in request.args.getlist('rowid') %}
+          <input type="hidden" name="rowid" value="{{ rowid }}">
+        {% endfor %}
+
+        <div class="govuk-button-group govuk-!-margin-bottom-0">
+          {{ govukButton({
+            "text": "Confirm " + action_name|lower,
+            "classes": "govuk-button--primary"
+          }) }}
+          <a href="{{ cancel_url }}" class="govuk-link govuk-link--no-visited-state govuk-!-margin-left-3">Cancel</a>
+        </div>
+      </form>
+    {% endset %}
+
+        {{ govukNotificationBanner({
+          "html": confirmation_html,
+          "titleText": "Confirm action",
+        }) }}
+  {% endif %}
+
+  {# Flash messages using GOV.UK Notification Banner #}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% from 'govuk_frontend_jinja/components/notification-banner/macro.html' import govukNotificationBanner %}
+
+      {% for category, message in messages %}
+        {% if category == 'success' %}
+          {{ govukNotificationBanner({
+            "type": "success",
+            "html": message
+          }) }}
+        {% else %}
+          {# error, warning, or other categories #}
+          {{ govukNotificationBanner({
+            "html": message,
+            "titleText": "Important" if category == 'error' else "Information"
+          }) }}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+  </div>
+</div>
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h1 class="govuk-heading-l">{{ admin_view.name }}</h1>
+    </div>
+  </div>
+
+  {# MOJ Filter Layout - using macro from model/layout.html #}
+  {% call model_layout.mojFilterLayout() %}
+    {# Table #}
+    {% block model_list_table %}
+      <table class="govuk-table govuk-!-margin-bottom-2">
+        <caption class="govuk-table__caption govuk-visually-hidden">
+          {{ admin_view.name }} entries
+        </caption>
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            {# Bulk actions checkbox #}
+            {% if actions %}
+              <th scope="col" class="govuk-table__header xgov-fa-table__header--checkbox govuk-!-padding-right-2">
+                <div class="govuk-checkboxes govuk-checkboxes--small govuk-!-padding-left-2 govuk-!-padding-right-0">
+                  <div class="govuk-checkboxes__item">
+                    <input class="govuk-checkboxes__input"
+                           type="checkbox"
+                           id="select-all"
+                           aria-label="Select all records">
+                    <label class="govuk-label govuk-checkboxes__label" for="select-all">
+                      <span class="govuk-visually-hidden">Select all</span>
+                    </label>
+                  </div>
+                </div>
+              </th>
+            {% endif %}
+
+            {% for c, name in list_columns %}
+              {% set column = loop.index0 %}
+              <th scope="col" class="govuk-table__header col-{{c}}">
+                {% if admin_view.is_sortable(c) %}
+                  {% set sortClasses = "govuk-link govuk-link--no-visited-state xgov-fa-link--sort" %}
+                  {% if sort_column == column %}
+                    {% set sortClasses = sortClasses + (" xgov-fa-link--sort-descending" if sort_desc else " xgov-fa-link--sort-ascending") %}
+                    <a href="{{ sort_url(column, True) }}"
+                       class="{{ sortClasses }}"
+                       aria-label="Sort by {{ name }}, currently sorted {{ 'descending' if sort_desc else 'ascending' }}">
+                      {{ name }}
+                    </a>
+                  {% else %}
+                    <a href="{{ sort_url(column) }}"
+                       class="{{ sortClasses }}"
+                       aria-label="Sort by {{ name }}">
+                      {{ name }}
+                    </a>
+                  {% endif %}
+                {% else %}
+                  {{ name }}
+                {% endif %}
+
+                {% if admin_view.column_descriptions.get(c) %}
+                  <span class="xgov-fa-table__header--hint">
+                    {{ admin_view.column_descriptions[c] }}
+                  </span>
+                {% endif %}
+              </th>
+            {% endfor %}
+          </tr>
+        </thead>
+
+        <tbody class="govuk-table__body">
+          {% for row in data %}
+            <tr class="govuk-table__row">
+              {# Bulk action checkbox #}
+              {% if actions %}
+                <td class="govuk-table__cell xgov-fa-table__cell--compact govuk-!-padding-right-2">
+                  <div class="govuk-checkboxes govuk-checkboxes--small govuk-!-padding-left-2 govuk-!-padding-right-0">
+                    <div class="govuk-checkboxes__item">
+                      <input class="govuk-checkboxes__input action-checkbox"
+                             type="checkbox"
+                             name="rowid"
+                             id="row-{{ get_pk_value(row) }}"
+                             value="{{ get_pk_value(row) }}"
+                             {% if get_pk_value(row)|string in request.args.getlist('rowid') %}checked{% endif %}
+                             aria-label="Select row {{ loop.index }}">
+                      <label class="govuk-label govuk-checkboxes__label govuk-!-padding-0"
+                             for="row-{{ get_pk_value(row) }}">
+                        <span class="govuk-visually-hidden">Select</span>
+                      </label>
+                    </div>
+                  </div>
+                </td>
+              {% endif %}
+
+              {% for c, name in list_columns %}
+                <td class="govuk-table__cell col-{{c}}">
+                  {% if loop.index == 1 %}
+                    {% if admin_view.can_edit %}
+                      <a class="govuk-link govuk-link--no-visited-state"
+                         href="{{ get_url('.edit_view', id=get_pk_value(row), url=return_url) }}">
+                        {{ get_value(row, c) }}
+                        <span class="govuk-visually-hidden"> (view and edit)</span>
+                      </a>
+                    {% elif admin_view.can_view_details %}
+                      <a class="govuk-link govuk-link--no-visited-state"
+                         href="{{ get_url('.details_view', id=get_pk_value(row), url=return_url) }}">
+                        {{ get_value(row, c) }}
+                        <span class="govuk-visually-hidden"> (view details)</span>
+                      </a>
+                    {% else %}
+                      {{ get_value(row, c) }}
+                    {% endif %}
+                  {% else %}
+                    {{ get_value(row, c) }}
+                  {% endif %}
+                </td>
+              {% endfor %}
+            </tr>
+          {% else %}
+            <tr>
+              <td class="govuk-table__cell" colspan="{{ list_columns|length + (1 if actions else 0) }}">
+                {% block empty_list_message %}
+                  <p class="govuk-body">
+                    {{ admin_view.get_empty_list_message() }}
+                  </p>
+                {% endblock %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endblock %}
+  {% endcall %}
+
+{% endblock %}
+
+{% block bodyEnd %}
+  {{ super() }}
+  {{ lib.form_js() }}
+
+  {# Initialize FilterToggleButton with custom text showing active filter count #}
+  {% if search_supported or filters %}
+  <script {{ admin_csp_nonce_attribute }}>
+    (function() {
+      // Count active filters from server-side variables
+      var activeFilterCount = {{ (active_filters|length if active_filters else 0) + (1 if search else 0) }};
+      var showText = activeFilterCount > 0
+        ? 'Show filters (' + activeFilterCount + ' active)'
+        : 'Show filters';
+
+      function initializeFilterToggle() {
+        // Initialize FilterToggleButton
+        const filterElements = document.querySelectorAll('[data-module="moj-filter"]');
+        filterElements.forEach(function(element) {
+          // Prevent scroll when filter panel is focused
+          const originalFocus = element.focus;
+          element.focus = function() {
+            originalFocus.call(this, { preventScroll: true });
+          };
+
+          new window.FilterToggleButton(element, {
+            toggleButton: {
+              showText: showText,
+              hideText: 'Hide filters'
+            }
+          });
+        });
+      }
+
+      // Wait for FilterToggleButton to be available (module script loads async)
+      if (window.FilterToggleButton) {
+        initializeFilterToggle();
+      } else {
+        window.addEventListener('FilterToggleButtonReady', initializeFilterToggle);
+      }
+    })();
+  </script>
+  {% endif %}
+
+  {# Progressive enhancement for filters - remove empty inputs before submit #}
+  {% if filters %}
+    <script {{ admin_csp_nonce_attribute }}>
+      (function() {
+        var filterForm = document.getElementById('filter_form');
+        if (filterForm) {
+          filterForm.addEventListener('submit', function(e) {
+            // Remove empty filter inputs before submitting
+            var inputs = filterForm.querySelectorAll('input[type="text"], input[type="hidden"], select');
+            inputs.forEach(function(input) {
+              // Skip hidden inputs that preserve state (sort, search, etc)
+              if (input.name && input.name.startsWith('flt') && !input.value.trim()) {
+                input.disabled = true;
+              }
+            });
+          });
+        }
+      })();
+    </script>
+  {% endif %}
+
+  {# Progressive enhancement for bulk actions #}
+  {% if actions %}
+    <script {{ admin_csp_nonce_attribute }}>
+      (function() {
+        var selectAll = document.getElementById('select-all');
+        var checkboxes = document.querySelectorAll('.action-checkbox');
+        var bulkActionButtons = document.querySelectorAll('[form="bulk-action-form"]');
+        var bulkForm = document.getElementById('bulk-action-form');
+
+        // Fix bulk action button types after MOJ ButtonMenu changes them
+        // The MOJ ButtonMenu component converts all buttons to type="button",
+        // but bulk action buttons need to be type="submit" to work properly
+        // Use MutationObserver to detect when ButtonMenu modifies the buttons
+        // FIXME: workaround for MoJ's action menu changing type='submit' inputs to type='button' inputs; if/when they
+        // address this we should be able to remove this.
+        var observer = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'type') {
+              var button = mutation.target;
+              if (button.getAttribute('form') === 'bulk-action-form' && button.getAttribute('type') === 'button') {
+                button.setAttribute('type', 'submit');
+              }
+            }
+          });
+        });
+
+        // Observe each bulk action button for attribute changes
+        bulkActionButtons.forEach(function(button) {
+          observer.observe(button, { attributes: true, attributeFilter: ['type'] });
+
+          // Also fix it immediately in case it's already been changed
+          if (button.getAttribute('type') === 'button') {
+            button.setAttribute('type', 'submit');
+          }
+        });
+
+        // Update bulk action button text with selection count
+        function updateBulkActionButtons() {
+          var count = document.querySelectorAll('.action-checkbox:checked').length;
+
+          bulkActionButtons.forEach(function(button) {
+            // Get the original text without count suffix
+            var originalText = button.getAttribute('data-original-text') || button.textContent.replace(/ \(\d+ selected\)$/, '');
+
+            // Store original text if not already stored
+            if (!button.getAttribute('data-original-text')) {
+              button.setAttribute('data-original-text', originalText.trim());
+            }
+
+            // Update button text with count
+            if (count > 0) {
+              button.textContent = originalText.trim() + ' (' + count + ' selected)';
+            } else {
+              button.textContent = originalText.trim() + ' (0 selected)';
+            }
+          });
+        }
+
+        // Select all functionality
+        if (selectAll) {
+          selectAll.addEventListener('change', function() {
+            checkboxes.forEach(function(cb) {
+              cb.checked = selectAll.checked;
+            });
+            updateBulkActionButtons();
+          });
+        }
+
+        // Individual checkbox listeners
+        checkboxes.forEach(function(cb) {
+          cb.addEventListener('change', function() {
+            // Update select-all state
+            var allChecked = Array.from(checkboxes).every(function(checkbox) {
+              return checkbox.checked;
+            });
+            var someChecked = Array.from(checkboxes).some(function(checkbox) {
+              return checkbox.checked;
+            });
+
+            if (selectAll) {
+              selectAll.checked = allChecked;
+              selectAll.indeterminate = someChecked && !allChecked;
+            }
+
+            updateBulkActionButtons();
+          });
+        });
+
+        // Initial update
+        updateBulkActionButtons();
+
+        // Handle confirmation for bulk actions when form is submitted
+        if (bulkForm) {
+          bulkForm.addEventListener('submit', function(e) {
+            var count = document.querySelectorAll('.action-checkbox:checked').length;
+
+            if (count === 0) {
+              e.preventDefault();
+              alert('Please select at least one record.');
+              return false;
+            }
+
+            // Get the action from the button that was clicked
+            // When a submit button is clicked, the form's submitter property contains it
+            var submitter = e.submitter;
+            if (!submitter) {
+              e.preventDefault();
+              alert('No action selected.');
+              return false;
+            }
+
+            var action = submitter.value;
+
+            // Check for confirmation required actions
+            {% if actions_confirmation %}
+              var confirmations = {{ actions_confirmation|tojson|safe }};
+              if (confirmations[action]) {
+                e.preventDefault();
+
+                // Build confirmation URL with selected items
+                var url = new URL(window.location.href);
+                url.searchParams.set('_confirm_action', action);
+
+                // Add selected row IDs to the URL
+                var checkboxes = document.querySelectorAll('.action-checkbox:checked');
+                url.searchParams.delete('rowid'); // Clear existing
+                checkboxes.forEach(function(cb) {
+                  url.searchParams.append('rowid', cb.value);
+                });
+
+                // Redirect to the confirmation page
+                window.location.href = url.toString();
+                return false;
+              }
+            {% endif %}
+          });
+        }
+      })();
+    </script>
+  {% endif %}
+{% endblock %}

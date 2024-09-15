@@ -1,0 +1,25 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-ast
+        language_version: python3.13
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.0
+    hooks:
+      - id: ruff
+        args: [ --fix ]
+      - id: ruff-format
+
+  - repo: local
+    hooks:
+      - id: format-frontend
+        name: Format frontend files with Prettier
+        entry: make format-frontend
+        language: node
+        additional_dependencies:
+          - "prettier@3.6.2"
+          - "prettier-plugin-jinja-template@2.1.0"
+        pass_filenames: false

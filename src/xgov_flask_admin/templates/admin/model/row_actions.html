@@ -1,0 +1,30 @@
+{% import 'admin/lib.html' as lib with context %}
+
+{% macro link(action, url) %}
+<a class="govuk-link govuk-link--no-visited-state" href="{{ url }}">
+  {{ action.title }}
+</a>
+{% endmacro %}
+
+{% macro view_row(action, row_id, row) %}
+  {{ link(action, get_url('.details_view', id=row_id, url=return_url)) }}
+{% endmacro %}
+
+{% macro edit_row(action, row_id, row) %}
+{{ link(action, get_url('.edit_view', id=row_id, url=return_url)) }}
+{% endmacro %}
+
+{% macro delete_row(action, row_id, row) %}
+<form class="icon" method="POST" action="{{ get_url('.delete_view') }}">
+  {{ delete_form.id(value=get_pk_value(row)) }}
+  {{ delete_form.url(value=return_url) }}
+  {% if delete_form.csrf_token %}
+  {{ delete_form.csrf_token }}
+  {% elif csrf_token %}
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+  {% endif %}
+  <button onclick="return faHelpers.safeConfirm('{{ _gettext('Are you sure you want to delete this record?') }}');">
+    <span class="fa fa-trash glyphicon glyphicon-trash"><p class="govuk-visually-hidden">Delete this record</p></span>
+  </button>
+</form>
+{% endmacro %}

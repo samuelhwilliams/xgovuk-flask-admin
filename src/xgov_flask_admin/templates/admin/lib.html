@@ -1,0 +1,57 @@
+{% import 'admin/static.html' as admin_static with context %}
+
+{% macro render_form_fields(form, form_opts=None) %}
+    {% if form.hidden_tag is defined %}
+        {{ form.hidden_tag() }}
+    {% else %}
+        {% if csrf_token %}
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        {% endif %}
+        {% for f in form if f.widget.input_type == 'hidden' %}
+            {{ f }}
+        {% endfor %}
+    {% endif %}
+
+    {% if form_opts and form_opts.form_rules %}
+        {% for r in form_opts.form_rules %}
+            {{ r(form, form_opts=form_opts) }}
+        {% endfor %}
+    {% else %}
+        {% for f in form if f.widget.input_type != 'hidden' %}
+          {% if form_opts %}
+            {% set kwargs = form_opts.widget_args.get(f.short_name, {}) %}
+          {% else %}
+            {% set kwargs = {} %}
+          {% endif %}
+          {{ f(params=kwargs) | safe }}
+        {% endfor %}
+    {% endif %}
+{% endmacro %}
+
+{% macro form_tag(form=None, action=None) %}
+    <form action="{{ action or '' }}" method="POST" role="form" enctype="multipart/form-data" novalidate>
+    {{ caller() }}
+    </form>
+{% endmacro %}
+
+{% macro render_form_buttons(cancel_url, is_modal=False) %}
+  <div class="govuk-button-group">
+    <input type="submit" class="govuk-button" value="{{ _gettext('Save') }}" />
+    {% if cancel_url %}
+      <a href="{{ cancel_url }}" class="govuk-link govuk-link--no-visited-state" role="button">{{ _gettext('Cancel') }}</a>
+    {% endif %}
+  </div>
+{% endmacro %}
+
+{% macro render_form(form, cancel_url, form_opts=None, action=None, is_modal=False) -%}
+    {% call form_tag(action=action) %}
+        {{ render_form_fields(form, form_opts=form_opts) }}
+        {{ render_form_buttons(cancel_url, is_modal) }}
+    {% endcall %}
+{% endmacro %}
+
+{% macro form_css() %}
+{% endmacro %}
+
+{% macro form_js() %}
+{% endmacro %}
