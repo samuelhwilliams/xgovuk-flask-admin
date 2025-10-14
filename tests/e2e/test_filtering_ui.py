@@ -372,7 +372,7 @@ class TestFilterPersistence:
         assert filter_tag.count() > 0, "Expected filter tag to be displayed"
 
         # Click a sortable column header (e.g., Email or Name)
-        sort_link = page.locator("a.xgov-fa-link--sort").first
+        sort_link = page.locator("a.xgovuk-fa-link--sort").first
         assert sort_link.count() > 0, "Expected sortable column"
 
         sort_link.click()

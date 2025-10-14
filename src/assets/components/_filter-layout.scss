@@ -3,7 +3,7 @@
 @use "govuk";
 
 // Action bar wrapper - fixed positioning on small screens
-.xgov-fa-filter-layout__action-bar {
+.xgovuk-fa-filter-layout__action-bar {
     // Clear floats from MOJ action bar
     &::after {
         content: "";
@@ -26,7 +26,7 @@
 }
 
 // Scrollable content wrapper - only wraps the table
-.xgov-fa-scrollable-content {
+.xgovuk-fa-scrollable-content {
     // Constrain width to prevent parent container from scrolling
     // min-width: 0 allows the container to shrink below its content's natural width
     max-width: 100%;
@@ -80,7 +80,7 @@
 }
 
 // Footer alignment within filter layout
-.xgov-fa-filter-footer {
+.xgovuk-fa-filter-footer {
     // Ensure footer stays within the content area width on desktop
     // when filter sidebar is present
     @include govuk.govuk-media-query($from: desktop) {
@@ -105,7 +105,7 @@
 
 // Override MOJ's overflow-x behavior to prevent parent-level scrolling
 // MOJ sets overflow-x: auto which creates unwanted scrollbars
-// We only want scrolling at the table level (.xgov-fa-scrollable-content)
+// We only want scrolling at the table level (.xgovuk-fa-scrollable-content)
 .moj-filter-layout__content {
     // Keep overflow: hidden for block formatting context (needed for float layout)
     // But prevent horizontal scrolling at this level

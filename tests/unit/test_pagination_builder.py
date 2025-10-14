@@ -1,7 +1,7 @@
 """Unit tests for GOV.UK pagination helper."""
 
 import pytest
-from xgov_flask_admin import govuk_pagination_params_builder
+from xgovuk_flask_admin import govuk_pagination_params_builder
 
 
 @pytest.mark.unit

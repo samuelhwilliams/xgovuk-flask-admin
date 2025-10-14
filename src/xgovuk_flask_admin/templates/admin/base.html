@@ -4,11 +4,11 @@
 
 {% set containerClasses = '' %}
 {% set mainClasses = '' %}
-{% set assetPath = url_for('xgov_flask_admin.static', filename='').rstrip('/') %}
+{% set assetPath = url_for('xgovuk_flask_admin.static', filename='').rstrip('/') %}
 {% set govukRebrand = true %}
 
 {% block head %}
-  {{ xgov_flask_admin_include_css() | safe }}
+  {{ xgovuk_flask_admin_include_css() | safe }}
 {% endblock head %}
 
 {% block header %}
@@ -42,7 +42,7 @@
   {% endfor %}
 
   {{ govukServiceNavigation({
-    "serviceName": xgov_flask_admin_service_name,
+    "serviceName": xgovuk_flask_admin_service_name,
     "serviceUrl": url_for(admin_view.admin.endpoint ~ '.index'),
     "navigation": service_nav_items
   }) }}
@@ -76,7 +76,7 @@
 {% endblock %}
 
 {% block bodyEnd %}
-  {{ xgov_flask_admin_include_js() | safe }}
+  {{ xgovuk_flask_admin_include_js() | safe }}
   {% if admin_view.extra_js %}
       {% for js_url in admin_view.extra_js %}
           <script {{ admin_csp_nonce_attribute }} src="{{ js_url }}" type="text/javascript"></script>

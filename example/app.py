@@ -1,5 +1,5 @@
 """
-An example app to be used with the xgov-flask-admin theme for testing.
+An example app to be used with the xgovuk-flask-admin theme for testing.
 """
 
 import datetime
@@ -14,7 +14,7 @@ from flask_sqlalchemy_lite import SQLAlchemy
 from example.enums import FavouriteColour
 from example.models import Base, User, Account, Post
 from example.views import UserModelView, PostModelView, AccountModelView
-from xgov_flask_admin import XGovFrontendTheme, XGovFlaskAdmin, XGovModelView
+from xgovuk_flask_admin import XGovukFrontendTheme, XGovukFlaskAdmin, XGovukModelView
 from govuk_frontend_wtf.main import WTFormsHelpers
 from jinja2 import PackageLoader, ChoiceLoader, PrefixLoader
 
@@ -48,14 +48,14 @@ def _create_app(config_overrides=None, seed: bool = True):
                 PrefixLoader(
                     {"govuk_frontend_wtf": PackageLoader("govuk_frontend_wtf")}
                 ),
-                PackageLoader("xgov_flask_admin"),
+                PackageLoader("xgovuk_flask_admin"),
             ]
         )
     }
 
     # Initialize extensions
-    admin = Admin(app, theme=XGovFrontendTheme())
-    XGovFlaskAdmin(app, service_name="Gov Design System - Flask Admin")
+    admin = Admin(app, theme=XGovukFrontendTheme())
+    XGovukFlaskAdmin(app, service_name="X-GOV.UK Flask Admin")
     WTFormsHelpers(app)
     db = SQLAlchemy(app)
 

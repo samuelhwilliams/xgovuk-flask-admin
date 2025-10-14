@@ -1,12 +1,12 @@
-"""Integration tests for XGovAdminModelConverter."""
+"""Integration tests for XGovukAdminModelConverter."""
 
 import pytest
 from govuk_frontend_wtf.wtforms_widgets import GovTextInput, GovSelect
-from xgov_flask_admin.widgets import GovDateInput
+from xgovuk_flask_admin.widgets import GovDateInput
 
 
 @pytest.mark.integration
-class TestXGovAdminModelConverter:
+class TestXGovukAdminModelConverter:
     """Test form field conversion for GOV.UK widgets."""
 
     def test_maps_string_to_gov_text_input(self,  user_model_view):

@@ -1,9 +1,9 @@
 from wtforms.validators import Email
 
-from xgov_flask_admin import XGovModelView
+from xgovuk_flask_admin import XGovukModelView
 
 
-class UserModelView(XGovModelView):
+class UserModelView(XGovukModelView):
     page_size = 15
     can_set_page_size = True
     page_size_options = [10, 15, 25, 50]
@@ -32,7 +32,7 @@ class UserModelView(XGovModelView):
     }
 
 
-class PostModelView(XGovModelView):
+class PostModelView(XGovukModelView):
     page_size = 20
     can_set_page_size = True
     can_edit = False
@@ -53,5 +53,5 @@ class PostModelView(XGovModelView):
     column_formatters = {"author": lambda v, c, m, p: m.author.name if m.author else ""}
 
 
-class AccountModelView(XGovModelView):
+class AccountModelView(XGovukModelView):
     column_list = ["id", "user.email"]

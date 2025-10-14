@@ -4,7 +4,7 @@ import pytest
 from flask import Flask
 from markupsafe import Markup
 from jinja2 import PackageLoader, ChoiceLoader, PrefixLoader
-from xgov_flask_admin.widgets import GovSelectWithSearch
+from xgovuk_flask_admin.widgets import GovSelectWithSearch
 
 
 @pytest.fixture
@@ -13,7 +13,7 @@ def test_app():
     app = Flask(__name__)
     app.config["TESTING"] = True
 
-    # Configure Jinja2 loaders to find xgov-flask-admin templates
+    # Configure Jinja2 loaders to find xgovuk-flask-admin templates
     app.jinja_options = {
         "loader": ChoiceLoader(
             [
@@ -23,7 +23,7 @@ def test_app():
                 PrefixLoader(
                     {"govuk_frontend_wtf": PackageLoader("govuk_frontend_wtf")}
                 ),
-                PackageLoader("xgov_flask_admin"),
+                PackageLoader("xgovuk_flask_admin"),
             ]
         )
     }

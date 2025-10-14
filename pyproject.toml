@@ -1,5 +1,5 @@
 [project]
-name = "xgov-flask-admin"
+name = "xgovuk-flask-admin"
 version = "0.0.1"
 description = "Add your description here"
 readme = "README.md"
@@ -37,14 +37,14 @@ build-backend = "hatchling.build"
 ignore-vcs = false
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/xgov_flask_admin"]
-force-include = { "src/xgov_flask_admin/static" = "xgov_flask_admin/static" }
+packages = ["src/xgovuk_flask_admin"]
+force-include = { "src/xgovuk_flask_admin/static" = "xgovuk_flask_admin/static" }
 
 [tool.hatch.build.targets.sdist]
 include = [
     "src/",
 ]
-force-include = { "src/xgov_flask_admin/static" = "src/xgov_flask_admin/static" }
+force-include = { "src/xgovuk_flask_admin/static" = "src/xgovuk_flask_admin/static" }
 
 [tool.uv]
 
@@ -52,7 +52,7 @@ force-include = { "src/xgov_flask_admin/static" = "src/xgov_flask_admin/static" 
 flask-admin = { git = "https://github.com/flask-admin/flask-admin", branch = "master" }
 
 [tool.coverage.run]
-source = ["src/xgov_flask_admin"]
+source = ["src/xgovuk_flask_admin"]
 omit = ["*/tests/*", "*/test_*.py"]
 
 [tool.coverage.report]

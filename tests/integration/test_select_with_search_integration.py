@@ -9,7 +9,7 @@ from sqlalchemy import ForeignKey
 from sqlalchemy.orm import DeclarativeBase, Mapped, relationship
 from sqlalchemy.testing.schema import mapped_column
 
-from xgov_flask_admin import XGovFrontendTheme, XGovModelView, XGovFlaskAdmin
+from xgovuk_flask_admin import XGovukFrontendTheme, XGovukModelView, XGovukFlaskAdmin
 
 
 class Base(DeclarativeBase):
@@ -57,21 +57,21 @@ def integration_app():
                 PrefixLoader(
                     {"govuk_frontend_wtf": PackageLoader("govuk_frontend_wtf")}
                 ),
-                PackageLoader("xgov_flask_admin"),
+                PackageLoader("xgovuk_flask_admin"),
             ]
         )
     }
 
     # Initialize extensions
-    admin = Admin(app, theme=XGovFrontendTheme())
-    XGovFlaskAdmin(app, service_name="Test Service")
+    admin = Admin(app, theme=XGovukFrontendTheme())
+    XGovukFlaskAdmin(app, service_name="Test Service")
     db = SQLAlchemy(app)
 
     # Create tables and add views
     with app.app_context():
         Base.metadata.create_all(db.engine)
-        admin.add_view(XGovModelView(Author, db.session))
-        admin.add_view(XGovModelView(Book, db.session))
+        admin.add_view(XGovukModelView(Author, db.session))
+        admin.add_view(XGovukModelView(Book, db.session))
 
     yield app, db, admin
 

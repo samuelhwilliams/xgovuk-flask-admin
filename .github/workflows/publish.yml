@@ -67,7 +67,7 @@ jobs:
     needs: [build]
     environment:
       name: pypi
-      url: https://pypi.org/project/xgov-flask-admin/${{ github.ref_name }}
+      url: https://pypi.org/project/xgovuk-flask-admin/${{ github.ref_name }}
     runs-on: ubuntu-latest
     permissions:
       id-token: write

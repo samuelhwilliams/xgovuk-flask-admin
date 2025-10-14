@@ -130,7 +130,7 @@
           <tr class="govuk-table__row">
             {# Bulk actions checkbox #}
             {% if actions %}
-              <th scope="col" class="govuk-table__header xgov-fa-table__header--checkbox govuk-!-padding-right-2">
+              <th scope="col" class="govuk-table__header xgovuk-fa-table__header--checkbox govuk-!-padding-right-2">
                 <div class="govuk-checkboxes govuk-checkboxes--small govuk-!-padding-left-2 govuk-!-padding-right-0">
                   <div class="govuk-checkboxes__item">
                     <input class="govuk-checkboxes__input"
@@ -149,9 +149,9 @@
               {% set column = loop.index0 %}
               <th scope="col" class="govuk-table__header col-{{c}}">
                 {% if admin_view.is_sortable(c) %}
-                  {% set sortClasses = "govuk-link govuk-link--no-visited-state xgov-fa-link--sort" %}
+                  {% set sortClasses = "govuk-link govuk-link--no-visited-state xgovuk-fa-link--sort" %}
                   {% if sort_column == column %}
-                    {% set sortClasses = sortClasses + (" xgov-fa-link--sort-descending" if sort_desc else " xgov-fa-link--sort-ascending") %}
+                    {% set sortClasses = sortClasses + (" xgovuk-fa-link--sort-descending" if sort_desc else " xgovuk-fa-link--sort-ascending") %}
                     <a href="{{ sort_url(column, True) }}"
                        class="{{ sortClasses }}"
                        aria-label="Sort by {{ name }}, currently sorted {{ 'descending' if sort_desc else 'ascending' }}">
@@ -169,7 +169,7 @@
                 {% endif %}
 
                 {% if admin_view.column_descriptions.get(c) %}
-                  <span class="xgov-fa-table__header--hint">
+                  <span class="xgovuk-fa-table__header--hint">
                     {{ admin_view.column_descriptions[c] }}
                   </span>
                 {% endif %}
@@ -183,7 +183,7 @@
             <tr class="govuk-table__row">
               {# Bulk action checkbox #}
               {% if actions %}
-                <td class="govuk-table__cell xgov-fa-table__cell--compact govuk-!-padding-right-2">
+                <td class="govuk-table__cell xgovuk-fa-table__cell--compact govuk-!-padding-right-2">
                   <div class="govuk-checkboxes govuk-checkboxes--small govuk-!-padding-left-2 govuk-!-padding-right-0">
                     <div class="govuk-checkboxes__item">
                       <input class="govuk-checkboxes__input action-checkbox"

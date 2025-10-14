@@ -6,7 +6,7 @@ from flask_admin import Admin
 from flask_sqlalchemy_lite import SQLAlchemy
 from jinja2 import PackageLoader, ChoiceLoader, PrefixLoader
 
-from xgov_flask_admin import XGovFrontendTheme, XGovModelView, XGovFlaskAdmin
+from xgovuk_flask_admin import XGovukFrontendTheme, XGovukModelView, XGovukFlaskAdmin
 from example.models import Base, User
 
 
@@ -32,22 +32,22 @@ class TestCustomEndpoint:
                     PrefixLoader(
                         {"govuk_frontend_wtf": PackageLoader("govuk_frontend_wtf")}
                     ),
-                    PackageLoader("xgov_flask_admin"),
+                    PackageLoader("xgovuk_flask_admin"),
                 ]
             )
         }
 
         # Initialize extensions with custom endpoint name (but default URL prefix)
         admin = Admin(
-            app, theme=XGovFrontendTheme(), endpoint="custom_admin", url="/admin"
+            app, theme=XGovukFrontendTheme(), endpoint="custom_admin", url="/admin"
         )
-        XGovFlaskAdmin(app, service_name="Test Service")
+        XGovukFlaskAdmin(app, service_name="Test Service")
         db = SQLAlchemy(app)
 
         # Create tables and add views
         with app.app_context():
             Base.metadata.create_all(db.engine)
-            admin.add_view(XGovModelView(User, db.session))
+            admin.add_view(XGovukModelView(User, db.session))
 
         yield app, db
 

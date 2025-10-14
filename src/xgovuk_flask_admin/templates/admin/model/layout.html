@@ -302,7 +302,7 @@
     "id": "page-size",
     "name": "page_size",
     "label": {"text": "Items per page", "classes": "govuk-label--s govuk-visually-hidden"},
-    "classes": "xgov-fa-page-size-select",
+    "classes": "xgovuk-fa-page-size-select",
     "items": select_items,
     "attributes": {"onchange": "this.form.submit()"}
   }) }}
@@ -416,7 +416,7 @@
 
     <div class="moj-filter-layout__content">
       {# Action bar wrapper - fixed, doesn't scroll with table #}
-      <div class="xgov-fa-filter-layout__action-bar">
+      <div class="xgovuk-fa-filter-layout__action-bar">
         <div class="moj-action-bar">
           {% if search_supported or filters %}
           <div class="moj-action-bar__filter">
@@ -464,7 +464,7 @@
       </div>
 
       {# Scrollable content wrapper - only wraps the table #}
-      <div class="xgov-fa-scrollable-content">
+      <div class="xgovuk-fa-scrollable-content">
         {# Bulk actions form - wrap table if actions are enabled #}
         {% if actions %}
           <form method="POST" action="{{ get_url('.action_view') }}" id="bulk-action-form">
@@ -486,7 +486,7 @@
 
       {# Footer - pagination, result count, page size selector #}
       {% set hasPagination = num_pages and num_pages > 1 %}
-      <div class="govuk-grid-row xgov-fa-filter-footer">
+      <div class="govuk-grid-row xgovuk-fa-filter-footer">
         <div class="govuk-grid-column-one-{% if hasPagination %}quarter{% else %}half{% endif %}">
           <p class="govuk-body govuk-!-margin-top-2">
             Showing
@@ -500,7 +500,7 @@
         {# Pagination - centered within column #}
         {% if hasPagination %}
           <div class="govuk-grid-column-one-half">
-            <div class="xgov-fa-pagination-wrapper">
+            <div class="xgovuk-fa-pagination-wrapper">
               {{ govukPagination(govuk_pagination_data_builder(page, num_pages, pager_url)) }}
             </div>
           </div>

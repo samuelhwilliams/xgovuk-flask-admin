@@ -5,7 +5,7 @@ import pytest
 from sqlalchemy import Column, DateTime, create_engine
 from sqlalchemy.orm import declarative_base, Session
 
-from xgov_flask_admin import (
+from xgovuk_flask_admin import (
     DateTimeEqualFilter,
     DateTimeAfterFilter,
     DateTimeBeforeFilter,

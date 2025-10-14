@@ -54,7 +54,7 @@ jobs:
         run: uv run playwright install --with-deps chromium
 
       - name: Run unit and integration tests
-        run: uv run pytest -k "unit or integration" --cov=xgov_flask_admin --cov-report=html --cov-report=term --cov-report=xml
+        run: uv run pytest -k "unit or integration" --cov=xgovuk_flask_admin --cov-report=html --cov-report=term --cov-report=xml
 
       - name: Run e2e tests
         if: always()

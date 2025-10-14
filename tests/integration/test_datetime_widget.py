@@ -3,7 +3,7 @@
 import pytest
 from datetime import datetime
 from wtforms import Form, DateTimeField
-from xgov_flask_admin.widgets import GovDateTimeInput
+from xgovuk_flask_admin.widgets import GovDateTimeInput
 
 
 class DateTimeForm(Form):

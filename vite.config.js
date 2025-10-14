@@ -9,7 +9,7 @@ export default defineConfig({
         outDir: path.join(
             __dirname,
             "src",
-            "xgov_flask_admin",
+            "xgovuk_flask_admin",
             "static",
             "dist",
         ),

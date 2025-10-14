@@ -8,11 +8,11 @@
  * The modifier classes should be added alongside the base component class
  * from the GOV.UK Design System of `govuk-link`
  *
- * When un-sorted (`xgov-fa-link--sort`), the link includes both up and down
+ * When un-sorted (`xgovuk-fa-link--sort`), the link includes both up and down
  * arrows on the right, as an affordance to indicate what the link does.
  *
- * When sorted in a particular direction (`xgov-fa-link--sort-ascending` or
- * `xgov-fa-link--sort-descending`), a single (larger) up or down arrow is shown.
+ * When sorted in a particular direction (`xgovuk-fa-link--sort-ascending` or
+ * `xgovuk-fa-link--sort-descending`), a single (larger) up or down arrow is shown.
  *
  * This implementation uses pseudo-elements with adequate padding
  * to ensure arrows never overlap with text at any viewport size.
@@ -20,16 +20,16 @@
  * FIXME: Probably want to switch over to Moj Frontend sortable-table styling for these at some point?
  */
 
-.xgov-fa-link--sort,
-.xgov-fa-link--sort-ascending,
-.xgov-fa-link--sort-descending {
+.xgovuk-fa-link--sort,
+.xgovuk-fa-link--sort-ascending,
+.xgovuk-fa-link--sort-descending {
     position: relative;
     padding-right: 1.2em; // Enough space for arrows
     white-space: nowrap; // Prevent text from wrapping into arrow space
 }
 
 // Unsorted state - show both arrows stacked vertically
-.xgov-fa-link--sort::after {
+.xgovuk-fa-link--sort::after {
     content: "\25B2\A\25BC"; // Up arrow, newline, down arrow
     white-space: pre; // Preserve the newline
     position: absolute;
@@ -44,7 +44,7 @@
 }
 
 // Ascending state - show single up arrow
-.xgov-fa-link--sort-ascending::after {
+.xgovuk-fa-link--sort-ascending::after {
     content: "\25B2"; // ▲
     position: absolute;
     right: 0;
@@ -57,7 +57,7 @@
 }
 
 // Descending state - show single down arrow
-.xgov-fa-link--sort-descending::after {
+.xgovuk-fa-link--sort-descending::after {
     content: "\25BC"; // ▼
     position: absolute;
     right: 0;

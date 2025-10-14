@@ -1,11 +1,11 @@
-"""Unit tests for XGovFilterConverter."""
+"""Unit tests for XGovukFilterConverter."""
 
 import pytest
 from flask_admin.contrib.sqla import filters as sqla_filters
 from sqlalchemy import Column, Integer, String, DateTime, Boolean
 from sqlalchemy.orm import declarative_base
 
-from xgov_flask_admin import XGovFilterConverter
+from xgovuk_flask_admin import XGovukFilterConverter
 
 
 Base = declarative_base()
@@ -27,13 +27,13 @@ class SampleModel(Base):
     optional_number = Column(Integer, nullable=True)
 
 
-class TestXGovFilterConverter:
-    """Test XGovFilterConverter customizations."""
+class TestXGovukFilterConverter:
+    """Test XGovukFilterConverter customizations."""
 
     @pytest.fixture
     def converter(self):
-        """Create a XGovFilterConverter instance."""
-        return XGovFilterConverter()
+        """Create a XGovukFilterConverter instance."""
+        return XGovukFilterConverter()
 
     def test_string_filters_exclude_in_list(self, converter):
         """Test that string columns don't get 'in list' filters."""
@@ -212,7 +212,7 @@ class TestXGovFilterConverter:
     def test_date_filters_exclude_empty_for_non_nullable(self, converter):
         """Test that non-nullable date columns don't get FilterEmpty."""
         from sqlalchemy import Date
-        from xgov_flask_admin import DateAfterFilter, DateBeforeFilter
+        from xgovuk_flask_admin import DateAfterFilter, DateBeforeFilter
 
         column = Column("test_date", Date, nullable=False)
 
@@ -230,7 +230,7 @@ class TestXGovFilterConverter:
         assert sqla_filters.DateGreaterFilter not in filter_types
         assert sqla_filters.DateSmallerFilter not in filter_types
 
-        # Should NOT have between filters (removed from XGovFilterConverter)
+        # Should NOT have between filters (removed from XGovukFilterConverter)
         assert sqla_filters.DateBetweenFilter not in filter_types
         assert sqla_filters.DateNotBetweenFilter not in filter_types
 
@@ -245,7 +245,7 @@ class TestXGovFilterConverter:
 
     def test_datetime_filters_exclude_empty_for_non_nullable(self, converter):
         """Test that non-nullable datetime columns don't get FilterEmpty."""
-        from xgov_flask_admin import (
+        from xgovuk_flask_admin import (
             DateTimeEqualFilter,
             DateTimeAfterFilter,
             DateTimeBeforeFilter,
@@ -269,7 +269,7 @@ class TestXGovFilterConverter:
         assert sqla_filters.DateTimeGreaterFilter not in filter_types
         assert sqla_filters.DateTimeSmallerFilter not in filter_types
 
-        # Should NOT have between filters (removed from XGovFilterConverter)
+        # Should NOT have between filters (removed from XGovukFilterConverter)
         assert sqla_filters.DateTimeBetweenFilter not in filter_types
         assert sqla_filters.DateTimeNotBetweenFilter not in filter_types
 

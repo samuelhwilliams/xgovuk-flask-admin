@@ -16,12 +16,12 @@
 @use "components/filter-layout";
 @use "components/select-with-search";
 
-.xgov-fa-table__cell--compact {
+.xgovuk-fa-table__cell--compact {
     padding-top: 3px;
     padding-bottom: 3px;
 }
 
-.xgov-fa-table__header--checkbox {
+.xgovuk-fa-table__header--checkbox {
     @include govuk.govuk-responsive-padding(
         $direction: "top",
         $responsive-spacing-point: 0
@@ -29,7 +29,7 @@
     width: 50px;
 }
 
-.xgov-fa-table__header--hint {
+.xgovuk-fa-table__header--hint {
     @include govuk.govuk-font-size($size: 16);
     @include govuk.govuk-typography-weight-regular();
     @include govuk.govuk-responsive-margin(
@@ -45,11 +45,11 @@
     display: block;
 }
 
-.xgov-fa-pagination-wrapper {
+.xgovuk-fa-pagination-wrapper {
     display: flex;
     justify-content: center;
 }
 
-.xgov-fa-page-size-select {
+.xgovuk-fa-page-size-select {
     min-width: 0px;
 }

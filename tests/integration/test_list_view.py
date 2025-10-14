@@ -6,7 +6,7 @@ from flask_admin import Admin
 from flask_sqlalchemy_lite import SQLAlchemy
 from jinja2 import PackageLoader, ChoiceLoader, PrefixLoader
 
-from xgov_flask_admin import XGovFrontendTheme, XGovModelView, XGovFlaskAdmin
+from xgovuk_flask_admin import XGovukFrontendTheme, XGovukModelView, XGovukFlaskAdmin
 from example.models import Base, User
 from tests.factories import UserFactory
 
@@ -118,14 +118,14 @@ class TestListViewCanEdit:
                     PrefixLoader(
                         {"govuk_frontend_wtf": PackageLoader("govuk_frontend_wtf")}
                     ),
-                    PackageLoader("xgov_flask_admin"),
+                    PackageLoader("xgovuk_flask_admin"),
                 ]
             )
         }
 
         # Initialize extensions
-        admin = Admin(app, theme=XGovFrontendTheme())
-        XGovFlaskAdmin(app, service_name="Test Service")
+        admin = Admin(app, theme=XGovukFrontendTheme())
+        XGovukFlaskAdmin(app, service_name="Test Service")
         db = SQLAlchemy(app)
 
         # Create tables and add views
@@ -133,7 +133,7 @@ class TestListViewCanEdit:
             Base.metadata.create_all(db.engine)
 
             # Add read-only view (can_edit=False)
-            class ReadOnlyUserView(XGovModelView):
+            class ReadOnlyUserView(XGovukModelView):
                 can_edit = False
 
             admin.add_view(ReadOnlyUserView(User, db.session))
@@ -200,14 +200,14 @@ class TestListViewCanEdit:
                     PrefixLoader(
                         {"govuk_frontend_wtf": PackageLoader("govuk_frontend_wtf")}
                     ),
-                    PackageLoader("xgov_flask_admin"),
+                    PackageLoader("xgovuk_flask_admin"),
                 ]
             )
         }
 
         # Initialize extensions
-        admin = Admin(app, theme=XGovFrontendTheme())
-        XGovFlaskAdmin(app, service_name="Test Service")
+        admin = Admin(app, theme=XGovukFrontendTheme())
+        XGovukFlaskAdmin(app, service_name="Test Service")
         db = SQLAlchemy(app)
 
         # Create tables and add views
@@ -215,7 +215,7 @@ class TestListViewCanEdit:
             Base.metadata.create_all(db.engine)
 
             # Add view-only view (can_edit=False, can_view_details=True)
-            class ViewOnlyUserView(XGovModelView):
+            class ViewOnlyUserView(XGovukModelView):
                 can_edit = False
                 can_view_details = True
 

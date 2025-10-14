@@ -114,7 +114,7 @@ class TestNoJavaScript:
         page_no_js.goto(f"{page_no_js.base_url}/admin/user/")
 
         # Click sortable column header
-        sort_link = page_no_js.locator("a.xgov-fa-link--sort").first
+        sort_link = page_no_js.locator("a.xgovuk-fa-link--sort").first
         assert sort_link.count() > 0, "Expected sortable column"
 
         sort_link.click()

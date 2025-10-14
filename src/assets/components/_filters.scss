@@ -1,13 +1,13 @@
 // GOV.UK Flask Admin - Filter Styles
 @use "govuk";
 
-.xgov-fa-filter-tags {
+.xgovuk-fa-filter-tags {
     display: flex;
     flex-wrap: wrap;
     gap: govuk.govuk-spacing(2);
 }
 
-.xgov-fa-filter-tag-remove {
+.xgovuk-fa-filter-tag-remove {
     margin-left: govuk.govuk-spacing(1);
     text-decoration: none;
     font-weight: bold;

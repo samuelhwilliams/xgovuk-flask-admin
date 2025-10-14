@@ -1,38 +1,38 @@
-"""Integration tests for XGovModelView URL generation methods."""
+"""Integration tests for XGovukModelView URL generation methods."""
 
 import pytest
-from xgov_flask_admin import XGovModelView, XGovAdminModelConverter
+from xgovuk_flask_admin import XGovukModelView, XGovukAdminModelConverter
 
 
 @pytest.mark.integration
-class TestXGovModelView:
-    """Test XGovModelView configuration and methods."""
+class TestXGovukModelView:
+    """Test XGovukModelView configuration and methods."""
 
     def test_default_category(self, db_session):
         """Test that default category is set to 'Miscellaneous'."""
         from example.models import User
 
-        view = XGovModelView(User, db_session)
+        view = XGovukModelView(User, db_session)
         assert view.category == "Miscellaneous"
 
     def test_custom_category(self, db_session):
         """Test that custom category can be set."""
         from example.models import User
 
-        view = XGovModelView(User, db_session, category="Custom")
+        view = XGovukModelView(User, db_session, category="Custom")
         assert view.category == "Custom"
 
     def test_uses_govuk_converter(self, db_session):
-        """Test that XGovAdminModelConverter is used."""
+        """Test that XGovukAdminModelConverter is used."""
         from example.models import User
 
-        view = XGovModelView(User, db_session)
-        assert view.model_form_converter == XGovAdminModelConverter
+        view = XGovukModelView(User, db_session)
+        assert view.model_form_converter == XGovukAdminModelConverter
 
 
 @pytest.mark.integration
 class TestGetRemoveFilterUrl:
-    """Test XGovModelView._get_remove_filter_url() method.
+    """Test XGovukModelView._get_remove_filter_url() method.
 
     These integration tests verify that the remove filter URL generation works correctly
     in the context of the full application stack (Flask routing, ModelView).

@@ -6,7 +6,7 @@ from flask import request
 
 @pytest.mark.integration
 class TestGetListFilterArgs:
-    """Test XGovModelView._get_list_filter_args() date field combining.
+    """Test XGovukModelView._get_list_filter_args() date field combining.
 
     These integration tests verify that the date combining logic works correctly
     in the context of the full application stack (HTTP requests, Flask routing,

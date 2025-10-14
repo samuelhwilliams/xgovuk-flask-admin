@@ -1,4 +1,4 @@
-"""Custom WTForms widgets for xgov-flask-admin."""
+"""Custom WTForms widgets for xgovuk-flask-admin."""
 
 from govuk_frontend_wtf.gov_form_base import GovFormBase
 from govuk_frontend_wtf.wtforms_widgets import GovDateInput as _GovDateInput

@@ -15,7 +15,7 @@ from flask_admin.contrib.sqla import filters as sqla_filters
 from flask_admin.theme import Theme
 from flask_admin.model.form import converts
 from govuk_frontend_wtf.wtforms_widgets import GovTextInput, GovSelect
-from xgov_flask_admin.widgets import (
+from xgovuk_flask_admin.widgets import (
     GovSelectWithSearch,
     GovDateInput,
     GovDateTimeInput,
@@ -62,7 +62,7 @@ ROOT_DIR = Path(__file__).parent
 
 
 @dataclass
-class XGovFrontendTheme(Theme):
+class XGovukFrontendTheme(Theme):
     folder: str = "admin"
     base_template: str = "admin/base.html"
 
@@ -121,14 +121,14 @@ def govuk_pagination_params_builder(page_zero_indexed, total_pages, url_generato
     return component_params
 
 
-def xgov_flask_admin_include_css():
+def xgovuk_flask_admin_include_css():
     manifest_file = ROOT_DIR / "static" / "dist" / "manifest.json"
 
     with open(manifest_file) as f:
         manifest = json.load(f)
 
     css_file = Path(manifest["src/assets/main.scss"]["file"]).name
-    css_file_url = url_for("xgov_flask_admin.static", filename=css_file)
+    css_file_url = url_for("xgovuk_flask_admin.static", filename=css_file)
 
     return dedent(
         f"""
@@ -138,14 +138,14 @@ def xgov_flask_admin_include_css():
     ).strip()
 
 
-def xgov_flask_admin_include_js():
+def xgovuk_flask_admin_include_js():
     manifest_file = ROOT_DIR / "static" / "dist" / "manifest.json"
 
     with open(manifest_file) as f:
         manifest = json.load(f)
 
     js_file = Path(manifest["src/assets/main.js"]["file"]).name
-    js_file_url = url_for("xgov_flask_admin.static", filename=js_file)
+    js_file_url = url_for("xgovuk_flask_admin.static", filename=js_file)
 
     return dedent(
         f"""
@@ -155,7 +155,7 @@ def xgov_flask_admin_include_js():
     ).strip()
 
 
-class XGovFlaskAdmin:
+class XGovukFlaskAdmin:
     def __init__(self, app: Flask, service_name: str | None = None):
         self.service_name = service_name
 
@@ -164,14 +164,14 @@ class XGovFlaskAdmin:
 
     def __inject_jinja2_global_variables(self, app):
         @app.context_processor
-        def inject_xgov_flask_admin_globals():
-            return {"xgov_flask_admin_service_name": self.service_name}
+        def inject_xgovuk_flask_admin_globals():
+            return {"xgovuk_flask_admin_service_name": self.service_name}
 
-        app.template_global("xgov_flask_admin_include_css")(
-            xgov_flask_admin_include_css
+        app.template_global("xgovuk_flask_admin_include_css")(
+            xgovuk_flask_admin_include_css
         )
-        app.template_global("xgov_flask_admin_include_js")(
-            xgov_flask_admin_include_js
+        app.template_global("xgovuk_flask_admin_include_js")(
+            xgovuk_flask_admin_include_js
         )
         app.template_global("govuk_pagination_data_builder")(
             govuk_pagination_params_builder
@@ -180,15 +180,15 @@ class XGovFlaskAdmin:
     def __setup_static_routes(self, app):
         if not app.url_map.host_matching:
             app.route(
-                "/_xgov_flask_admin/<path:filename>",
-                endpoint="xgov_flask_admin.static",
+                "/_xgovuk_flask_admin/<path:filename>",
+                endpoint="xgovuk_flask_admin.static",
             )(self.static)
 
         else:
             app.route(
-                "/_xgov_flask_admin/<path:filename>",
-                endpoint="xgov_flask_admin.static",
-                host="<xgov_flask_admin_host>",
+                "/_xgovuk_flask_admin/<path:filename>",
+                endpoint="xgovuk_flask_admin.static",
+                host="<xgovuk_flask_admin_host>",
             )(self.static)
 
             @app.url_defaults
@@ -196,9 +196,9 @@ class XGovFlaskAdmin:
                 endpoint: str, values: t.Dict[str, t.Any]
             ) -> None:
                 if app.url_map.is_endpoint_expecting(
-                    endpoint, "xgov_flask_admin_host"
+                    endpoint, "xgovuk_flask_admin_host"
                 ):
-                    values.setdefault("xgov_flask_admin_host", request.host)
+                    values.setdefault("xgovuk_flask_admin_host", request.host)
 
             # Automatically strip `admin_routes_host` from the endpoint values so
             # that the view methods don't receive that parameter, as it's not actually
@@ -211,10 +211,10 @@ class XGovFlaskAdmin:
                     endpoint
                     and values
                     and app.url_map.is_endpoint_expecting(
-                        endpoint, "xgov_flask_admin_host"
+                        endpoint, "xgovuk_flask_admin_host"
                     )
                 ):
-                    values.pop("xgov_flask_admin_host", None)
+                    values.pop("xgovuk_flask_admin_host", None)
 
     def init_app(self, app: Flask, service_name: str | None = None):
         service_name = service_name or self.service_name
@@ -236,7 +236,7 @@ def widget_for_sqlalchemy_type(*args):
     return _inner
 
 
-class XGovAdminModelConverter(AdminModelConverter):
+class XGovukAdminModelConverter(AdminModelConverter):
     def __init__(self, session, view):
         super().__init__(session, view)
 
@@ -411,7 +411,7 @@ class TimeBeforeFilter(sqla_filters.TimeSmallerFilter):
         return "before"
 
 
-class XGovFilterConverter(sqla_filters.FilterConverter):
+class XGovukFilterConverter(sqla_filters.FilterConverter):
     """
     Custom filter converter for GOV.UK Flask Admin.
 
@@ -603,9 +603,9 @@ class XGovFilterConverter(sqla_filters.FilterConverter):
         return [f(column, name, **kwargs) for f in filter_classes]
 
 
-class XGovModelView(ModelView):
-    model_form_converter = XGovAdminModelConverter
-    filter_converter = XGovFilterConverter()
+class XGovukModelView(ModelView):
+    model_form_converter = XGovukAdminModelConverter
+    filter_converter = XGovukFilterConverter()
 
     # Format enum values to show their .value (lowercase) instead of .name (uppercase)
     # Format datetime values without microseconds for better readability
