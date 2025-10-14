@@ -106,8 +106,8 @@ class TestSelectWithSearchIntegration:
             assert '<label class="govuk-label' in html
             assert "Books" in html
 
-    def test_single_select_relationship_uses_regular_select(self, integration_app):
-        """Test that many-to-one relationships use regular select widget."""
+    def test_single_select_relationship_uses_select_with_search(self, integration_app):
+        """Test that many-to-one relationships use select-with-search widget."""
         app, db, admin = integration_app
 
         with app.test_client() as client:
@@ -117,15 +117,24 @@ class TestSelectWithSearchIntegration:
 
             html = response.data.decode("utf-8")
 
-            # Check that the author field is a regular select (no multiple)
+            # Check that the author field has select-with-search data-module
             assert 'name="author"' in html
-            # Should not have data-module for single-select
-            # (or might have it - that's OK, but shouldn't have multiple)
-            assert (
-                "multiple" not in html
-                or 'name="author"'
-                not in html.split("multiple")[0].split('name="author"')[-1]
-            )
+            assert 'data-module="select-with-search"' in html
+
+            # Check that it has the gem wrapper class
+            assert "gem-c-select-with-search" in html
+
+            # Should NOT have multiple attribute for single-select relationship
+            # Extract the select element for author to verify it doesn't have multiple
+            author_select_start = html.find('name="author"')
+            if author_select_start > 0:
+                # Look backwards for the opening <select tag
+                select_start = html.rfind("<select", 0, author_select_start)
+                # Look forwards for the closing >
+                select_end = html.find(">", author_select_start)
+                select_tag = html[select_start:select_end]
+                # Verify no multiple attribute in this select tag
+                assert "multiple" not in select_tag
 
     def test_form_renders_with_existing_data(self, integration_app):
         """Test that edit form renders correctly with existing relationships."""

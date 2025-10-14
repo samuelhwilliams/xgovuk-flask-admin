@@ -9,7 +9,6 @@
 @forward "moj/all" with (
     $moj-assets-path: ""
 );
-@use "accessible-autocomplete";
 
 @use "components/sort-buttons";
 @use "components/filters";

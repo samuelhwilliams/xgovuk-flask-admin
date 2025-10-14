@@ -179,8 +179,8 @@ class XGovukAdminModelConverter(AdminModelConverter):
             # Use select-with-search for multi-select (supports search + multiple selection)
             kwargs["widget"] = GovSelectWithSearch(multiple=True)
         else:
-            # Use standard GovSelect for single select
-            kwargs["widget"] = GovSelect()
+            # Use select-with-search for single select (provides accessible autocomplete)
+            kwargs["widget"] = GovSelectWithSearch(multiple=False)
 
         # Call parent to create the field with our widget in kwargs
         return super()._convert_relation(

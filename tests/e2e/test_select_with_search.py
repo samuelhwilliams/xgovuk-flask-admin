@@ -60,12 +60,14 @@ class TestSelectWithSearchEnhancement:
         # Wait for Choices.js to initialize
         page.wait_for_selector(".choices")
 
-        # Click on the Choices wrapper to open the dropdown
-        choices_wrapper = page.locator(".gem-c-select-with-search .choices")
+        # Click on the posts field's Choices wrapper to open the dropdown
+        # Be specific to target the posts field (multi-select)
+        posts_field = page.locator('label:has-text("Posts")').locator('..')
+        choices_wrapper = posts_field.locator(".choices")
         choices_wrapper.click()
 
-        # Wait for dropdown to appear
-        page.wait_for_selector(".choices__list--dropdown", state="visible")
+        # Wait for posts dropdown to appear specifically
+        posts_field.locator(".choices__list--dropdown").wait_for(state="visible")
 
         # Check that dropdown has options (posts)
         dropdown_items = page.locator(".choices__list--dropdown .choices__item")
@@ -82,18 +84,17 @@ class TestSelectWithSearchEnhancement:
         # Wait for Choices.js to initialize
         page.wait_for_selector(".choices")
 
-        # Click to open dropdown
-        choices_wrapper = page.locator(".gem-c-select-with-search .choices")
+        # Click to open posts dropdown specifically
+        posts_field = page.locator('label:has-text("Posts")').locator('..')
+        choices_wrapper = posts_field.locator(".choices")
         choices_wrapper.click()
-        page.wait_for_selector(".choices__list--dropdown", state="visible")
+        posts_field.locator(".choices__list--dropdown").wait_for(state="visible")
 
         # Count initial options
         initial_count = page.locator(".choices__list--dropdown .choices__item").count()
 
-        # Type in search box to filter
-        search_input = page.locator(
-            '.gem-c-select-with-search .choices input[type="search"]'
-        )
+        # Type in search box to filter - target the posts field's search input
+        search_input = page.locator('label:has-text("Posts")').locator('..').locator('.choices input[type="search"]')
         search_input.fill("xyz_nonexistent_search_term")
 
         # Check that "No results found" message appears or options are filtered
@@ -116,26 +117,25 @@ class TestSelectWithSearchEnhancement:
         # Wait for Choices.js
         page.wait_for_selector(".choices")
 
-        # Get initial count of selected items
-        initial_selected = page.locator(
-            ".choices__list--multiple .choices__item"
-        ).count()
+        # Get initial count of selected items (posts field specifically)
+        posts_field = page.locator('label:has-text("Posts")').locator('..')
+        initial_selected = posts_field.locator(".choices__list--multiple .choices__item").count()
 
-        # Click to open dropdown
-        choices_wrapper = page.locator(".gem-c-select-with-search .choices")
+        # Click to open posts dropdown
+        choices_wrapper = posts_field.locator(".choices")
         choices_wrapper.click()
-        page.wait_for_selector(".choices__list--dropdown", state="visible")
+        posts_field.locator(".choices__list--dropdown").wait_for(state="visible")
 
-        # Select first available option
-        first_option = page.locator(
+        # Select first available option from posts dropdown
+        first_option = posts_field.locator(
             ".choices__list--dropdown .choices__item--selectable"
         ).first
         if first_option.count() > 0:
             option_text = first_option.inner_text()
             first_option.click()
 
-            # Check that a new selected item appears
-            selected_items = page.locator(".choices__list--multiple .choices__item")
+            # Check that a new selected item appears in the posts field
+            selected_items = posts_field.locator(".choices__list--multiple .choices__item")
             new_count = selected_items.count()
             assert new_count == initial_selected + 1, (
                 f"Should have {initial_selected + 1} selected items, found {new_count}"
@@ -160,19 +160,20 @@ class TestSelectWithSearchEnhancement:
         # Wait for Choices.js
         page.wait_for_selector(".choices")
 
-        # Select an item first
-        choices_wrapper = page.locator(".gem-c-select-with-search .choices")
+        # Select an item first - target posts field specifically
+        posts_field = page.locator('label:has-text("Posts")').locator('..')
+        choices_wrapper = posts_field.locator(".choices")
         choices_wrapper.click()
-        page.wait_for_selector(".choices__list--dropdown", state="visible")
+        posts_field.locator(".choices__list--dropdown").wait_for(state="visible")
 
-        first_option = page.locator(
+        first_option = posts_field.locator(
             ".choices__list--dropdown .choices__item--selectable"
         ).first
         if first_option.count() > 0:
             first_option.click()
 
-            # Now try to remove it
-            selected_items = page.locator(".choices__list--multiple .choices__item")
+            # Now try to remove it from the posts field
+            selected_items = posts_field.locator(".choices__list--multiple .choices__item")
             initial_count = selected_items.count()
 
             # Click the remove button (X)
@@ -181,7 +182,7 @@ class TestSelectWithSearchEnhancement:
                 remove_button.click()
 
                 # Check that item was removed
-                final_count = page.locator(
+                final_count = posts_field.locator(
                     ".choices__list--multiple .choices__item"
                 ).count()
                 assert final_count < initial_count, (
@@ -244,13 +245,14 @@ class TestSelectWithSearchEnhancement:
         # Wait for Choices.js
         page.wait_for_selector(".choices")
 
-        # Click to open dropdown
-        choices_wrapper = page.locator(".gem-c-select-with-search .choices")
+        # Click to open posts dropdown
+        posts_field = page.locator('label:has-text("Posts")').locator('..')
+        choices_wrapper = posts_field.locator(".choices")
         choices_wrapper.click()
-        page.wait_for_selector(".choices__list--dropdown", state="visible")
+        posts_field.locator(".choices__list--dropdown").wait_for(state="visible")
 
-        # Count all available options in dropdown
-        dropdown_items = page.locator(".choices__list--dropdown .choices__item--choice")
+        # Count all available options in posts dropdown
+        dropdown_items = posts_field.locator(".choices__list--dropdown .choices__item--choice")
         dropdown_count = dropdown_items.count()
 
         # Should have approximately 20 posts total (each user has 2-5 posts, 8 users)
@@ -270,18 +272,19 @@ class TestSelectWithSearchEnhancement:
         # Wait for Choices.js
         page.wait_for_selector(".choices")
 
-        # Count initial selected posts
-        initial_selected = page.locator(
+        # Count initial selected posts (posts field specifically)
+        posts_field = page.locator('label:has-text("Posts")').locator('..')
+        initial_selected = posts_field.locator(
             ".choices__list--multiple .choices__item"
         ).count()
 
-        # Click to open dropdown
-        choices_wrapper = page.locator(".gem-c-select-with-search .choices")
+        # Click to open posts dropdown
+        choices_wrapper = posts_field.locator(".choices")
         choices_wrapper.click()
-        page.wait_for_selector(".choices__list--dropdown", state="visible")
+        posts_field.locator(".choices__list--dropdown").wait_for(state="visible")
 
-        # Select first available (unselected) option
-        available_options = page.locator(
+        # Select first available (unselected) option from posts dropdown
+        available_options = posts_field.locator(
             ".choices__list--dropdown .choices__item--selectable"
         )
         assert available_options.count() > 0, (
@@ -291,8 +294,8 @@ class TestSelectWithSearchEnhancement:
         added_post_title = available_options.first.inner_text()
         available_options.first.click()
 
-        # Verify the new selection appears as a tag
-        new_selected_count = page.locator(
+        # Verify the new selection appears as a tag in the posts field
+        new_selected_count = posts_field.locator(
             ".choices__list--multiple .choices__item"
         ).count()
         assert new_selected_count == initial_selected + 1, (
@@ -313,8 +316,9 @@ class TestSelectWithSearchEnhancement:
         edit_link.click()
         page.wait_for_selector(".choices")
 
-        # Verify the added post is still selected
-        final_selected = page.locator(".choices__list--multiple .choices__item")
+        # Verify the added post is still selected (posts field specifically)
+        posts_field = page.locator('label:has-text("Posts")').locator('..')
+        final_selected = posts_field.locator(".choices__list--multiple .choices__item")
         final_count = final_selected.count()
         assert final_count == initial_selected + 1, (
             f"After reload, should still have {initial_selected + 1} posts, found {final_count}"
@@ -425,13 +429,14 @@ class TestSelectWithSearchEnhancement:
                 "Any < or > characters in option text should be HTML-escaped"
             )
 
-        # Click to open Choices.js dropdown
-        choices_wrapper = page.locator(".gem-c-select-with-search .choices")
+        # Click to open Choices.js dropdown (posts field specifically)
+        posts_field = page.locator('label:has-text("Posts")').locator('..')
+        choices_wrapper = posts_field.locator(".choices")
         choices_wrapper.click()
-        page.wait_for_selector(".choices__list--dropdown", state="visible")
+        posts_field.locator(".choices__list--dropdown").wait_for(state="visible")
 
-        # Get the Choices.js dropdown HTML
-        dropdown_html = page.locator(".choices__list--dropdown").inner_html()
+        # Get the Choices.js dropdown HTML from posts field
+        dropdown_html = posts_field.locator(".choices__list--dropdown").inner_html()
 
         # Verify no executable script tags in the dropdown
         # (Would only appear if someone had a malicious __str__ method)
@@ -444,7 +449,7 @@ class TestSelectWithSearchEnhancement:
 
         # The Choices.js library should also escape HTML when rendering items
         # Check that there are no onclick or other event handlers in the dropdown items
-        dropdown_items = page.locator(".choices__list--dropdown .choices__item")
+        dropdown_items = posts_field.locator(".choices__list--dropdown .choices__item")
         for i in range(min(dropdown_items.count(), 5)):  # Check first 5 items
             item_html = dropdown_items.nth(i).evaluate("el => el.outerHTML")
             assert "onclick=" not in item_html.lower(), (

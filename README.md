@@ -127,7 +127,6 @@ including but not limited to:
 
 - [GOV.UK Design System](https://design-system.service.gov.uk/)
 - [Ministry of Justice Frontend](https://design-patterns.service.justice.gov.uk/)
-- [Accessible autocomplete](https://alphagov.github.io/accessible-autocomplete/examples/)
 - [GOV.UK Publishing Components](https://components.publishing.service.gov.uk/component-guide)
 - HMLR's [govuk-frontend-jinja](https://github.com/LandRegistry/govuk-frontend-jinja) and [govuk-frontend-wtf]
   (https://github.com/LandRegistry/govuk-frontend-wtf) libraries
