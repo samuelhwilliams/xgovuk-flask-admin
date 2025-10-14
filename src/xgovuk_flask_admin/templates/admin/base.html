@@ -21,7 +21,7 @@
       {% if children %}
         {% for child in children %}
           {% if child.is_accessible() and child.is_visible() and not child.is_category() %}
-            {% set item_text = item.name ~ " - " ~ child.name %}
+            {% set item_text = child.name %}
             {% set _ = service_nav_items.append({
               "href": child.get_url(),
               "text": item_text,
