@@ -36,8 +36,68 @@ admin = Admin(app, theme=XGovukFrontendTheme())
 xgovuk_flask_admin = XGovukFlaskAdmin(app)
 ```
 
+### Writing model views
+
 All of your SQLAlchemy model fields should derive from xgovuk-flask-admin's `XGovukModelView`, not from Flask-Admin's
 `sqla.ModelView`.
+
+To auto-generate CRUD pages for SQLAlchemy DB models, write sub-classes of XGovukModelView (which itself derives 
+from Flask-Admin's sqla.ModelView):
+
+```python
+class UserModelView(XGovukModelView):
+    page_size = 15
+    can_create = True
+    can_edit = True
+    can_set_page_size = True
+    page_size_options = [10, 15, 25, 50]
+
+    form_args = {"email": {"validators": [Email()]}}
+
+    column_filters = [
+        "age",
+        "job",
+        "email",
+        "created_at",
+        "favourite_colour",
+        "last_logged_in_at",
+    ]
+
+    column_searchable_list = ["email", "name"]
+
+    can_export = True
+    export_types = ["csv"]
+
+    column_descriptions = {
+        "age": "User's age in years",
+        "email": "Email address for contacting the user",
+        "created_at": "Date the user account was created",
+        "last_logged_in_at": "Date and time of the user's last login",
+    }
+
+```
+
+And then attach these model views to the Flask-Admin instance:
+
+```python
+    flask_admin.add_view(PlatformAdminUserView(User, db.session))
+    flask_admin.add_view(PlatformAdminUserRoleView(UserRole, db.session))
+```
+
+### Writing custom views
+
+Create a new Jinja2 template that extends from "admin/master.html" (which is a proxy for admin/base.html). Generally 
+all you should need to implement is the `action_panel` block, like so:
+
+```html
+{% block action_panel %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    ... your HTML here ...
+  </div>
+</div>
+{% endblock %}
+```
 
 ## Recognition / attribution
 
@@ -63,27 +123,28 @@ package was put together in 2025 and I'm placing a lower bound of support on Pyt
 ### Flask-Admin
 Not all features of Flask-Admin are currently supported, or likely to be supported in the future.
 
-| Feature                                    | Support status | Notes                                                                                                                                                                                                         |
-|--------------------------------------------|----------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Nested service navigation menu items       | 🔮             | Support Flask-Admin's "menu category" better, probably JS-only                                                                                                                                                |
-| Create new records                         | ✅              |                                                                                                                                                                                                               |
-| List existing records                      | ✅              |                                                                                                                                                                                                               |
-| Keyword search when listing records        | ✅              |                                                                                                                                                                                                               |
-| Apply filters when listing records         | ✅              |                                                                                                                                                                                                               |
-| Sort results                               | ✅              |                                                                                                                                                                                                               |
-| Changing page size when listing results    | ✅              |                                                                                                                                                                                                               |
-| Custom page sizes                          | ✅              |                                                                                                                                                                                                               |
-| Performing bulk actions on results         | ✅              |                                                                                                                                                                                                               |
-| View existing records                      | ✅              |                                                                                                                                                                                                               |
-| Edit existing records                      | ✅              |                                                                                                                                                                                                               |
-| Delete existing records                    | ✅              |                                                                                                                                                                                                               |
-| Edit relationships                         | ✅              |                                                                                                                                                                                                               |
-| Optimise/support 'large' relationships     | 🔮             | If a related table is large, performance will degrade rapidly because every related record is a choice in the select/dropdown menu. A future approach might be to dynamically load results from an API call   | 
-| Edit date+datetime fields                  | ✅              |                                                                                                                                                                                                               |
-| Edit one-to-one relationships              | ✅              |                                                                                                                                                                                                               |
-| Edit one-to-many relationships             | ✅              |                                                                                                                                                                                                               |
-| Standardised default GOV.UK error messages | 🔮             |                                                                                                                                                                                                               | 
-| Show full related model forms inline       | 🤔             | Flask-Admin allows rendering the full form of a related model inline of the main model (eg forms to edit posts by a user when editing a user). It might be nice to support this; some design thinking to do   |
+| Feature                                    | Support status | Notes                                                                                                                                                                                                       |
+|--------------------------------------------|----------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Nested service navigation menu items       | 🔮             | Support Flask-Admin's "menu category" better, probably JS-only                                                                                                                                              |
+| Create new records                         | ✅              |                                                                                                                                                                                                             |
+| List existing records                      | ✅              |                                                                                                                                                                                                             |
+| Keyword search when listing records        | ✅              |                                                                                                                                                                                                             |
+| Apply filters when listing records         | ✅              |                                                                                                                                                                                                             |
+| Sort results                               | ✅              |                                                                                                                                                                                                             |
+| Changing page size when listing results    | ✅              |                                                                                                                                                                                                             |
+| Custom page sizes                          | ✅              |                                                                                                                                                                                                             |
+| Performing bulk actions on results         | ✅              |                                                                                                                                                                                                             |
+| Editing record fields when listing results | 🤔             |                                                                                                                                                                                                             |
+| View existing records                      | ✅              |                                                                                                                                                                                                             |
+| Edit existing records                      | ✅              |                                                                                                                                                                                                             |
+| Delete existing records                    | ✅              |                                                                                                                                                                                                             |
+| Edit relationships                         | ✅              |                                                                                                                                                                                                             |
+| Optimise/support 'large' relationships     | 🔮             | If a related table is large, performance will degrade rapidly because every related record is a choice in the select/dropdown menu. A future approach might be to dynamically load results from an API call | 
+| Edit date+datetime fields                  | ✅              |                                                                                                                                                                                                             |
+| Edit one-to-one relationships              | ✅              |                                                                                                                                                                                                             |
+| Edit one-to-many relationships             | ✅              |                                                                                                                                                                                                             |
+| Standardised default GOV.UK error messages | 🔮             |                                                                                                                                                                                                             | 
+| Show full related model forms inline       | 🤔             | Flask-Admin allows rendering the full form of a related model inline of the main model (eg forms to edit posts by a user when editing a user). It might be nice to support this; some design thinking to do |
 
 Please raise an issue in this repository if you need functionality from Flask-Admin that isn't supported yet.
 
