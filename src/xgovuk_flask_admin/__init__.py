@@ -534,9 +534,6 @@ class XGovukModelView(ModelView):
 
         return query, count_query, joins, count_joins
 
-    def _resolve_widget_class_for_sqlalchemy_column(self, prop: ColumnProperty):
-        return GovTextInput
-
     def _iterate_model_fields(self):
         mapper = self.model._sa_class_manager.mapper
 
