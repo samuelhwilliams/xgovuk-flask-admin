@@ -133,7 +133,7 @@ def xgovuk_flask_admin_include_css():
     return dedent(
         f"""
             <!-- FLASK_VITE_HEADER -->
-            <link rel="stylesheet" href="{css_file_url}"></link>
+            <link rel="stylesheet" href="{css_file_url}">
         """
     ).strip()
 
