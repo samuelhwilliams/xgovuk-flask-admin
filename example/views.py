@@ -1,3 +1,4 @@
+from flask_admin import BaseView, expose
 from wtforms.validators import Email
 
 from xgovuk_flask_admin import XGovukModelView
@@ -55,3 +56,9 @@ class PostModelView(XGovukModelView):
 
 class AccountModelView(XGovukModelView):
     column_list = ["id", "user.email"]
+
+
+class CustomView(BaseView):
+    @expose('/', methods=('GET',))
+    def index(self):
+        return self.render('custom_view.html')

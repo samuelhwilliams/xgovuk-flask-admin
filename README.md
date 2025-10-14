@@ -11,7 +11,7 @@ patterns from the great [GOV.UK Design System](https://design-system.service.gov
 ## How to integrate with Flask-Admin
 
 Make sure your Flask app's Jinja environment is configured to load templates from at least the sources listed below.
-Then initialise Flask-Admin and xgovuk-flask-admin appropriately, making sure to pass the GOV.UK Frontend Theme to
+Then initialise Flask-Admin and xgovuk-flask-admin appropriately, making sure to pass the X-GOV.UK Frontend Theme to
 Flask-Admin.
 
 ```python
@@ -91,13 +91,32 @@ Create a new Jinja2 template that extends from "admin/master.html" (which is a p
 all you should need to implement is the `action_panel` block, like so:
 
 ```html
+{% extends "admin/master.html" %}
+
 {% block action_panel %}
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
-    ... your HTML here ...
+    <h1 class="govuk-heading-l">Custom view</h1>
+    <p class="govuk-body">This is a custom view where you can do whatever you want.</p>
   </div>
 </div>
 {% endblock %}
+```
+
+And then define a class for the view in Python:
+```python
+from flask_admin import BaseView, expose
+
+class CustomView(BaseView):
+    @expose('/', methods=('GET',))
+    def get(self):
+        return self.render('custom_view.html')
+```
+
+And attach the view to your admin instance:
+
+```python
+flask_admin.add_view(CustomView(name="Custom View", endpoint="custom"))
 ```
 
 ## Recognition / attribution
@@ -162,14 +181,12 @@ It may be possible to compile bundles for various versions of GOV.UK Frontend, i
 combinations of `govuk-frontend-jinja` and `govuk-frontend-wtf` in the future, but this is not currently planned. 
 Please comment on https://github.com/samuelhwilliams/xgovuk-flask-admin/issues/1 if this would be useful.
 
-The latest release of `xgovuk-flask-admin` will generally track the latest release of GOV.UK Frontend, 
+The latest release of `xgovuk-flask-admin` will generally track the latest releases of GOV.UK Frontend, 
 `govuk-frontend-jinja`, and `govuk-frontend-wtf`.
 
-| Package              | Currently supported version |
-|----------------------|-----------------------------|
-| GOV.UK Frontend      | 5.12.0                      |
-| govuk-frontend-jinja | 3.8.0                       |
-| govuk-frontend-wtf   | 3.2.0                       |
+| Package              | GOV.UK Frontend | govuk-frontend-jinja | govuk-frontend-wtf |
+|----------------------|-----------------|----------------------|--------------------|
+| >=0.1.0              | 5.12.0          | 3.8.0                | 3.2.0              |
 
 `xgovuk-flask-admin` uses `govuk-colour("purple")` as its brand colour on the (somewhat unfounded/unresearched) belief 
 that this isn't a colour used for branding in many places, so it's broadly "available". Given it will be unfamiliar, it 

@@ -13,10 +13,10 @@ from flask_sqlalchemy_lite import SQLAlchemy
 
 from example.enums import FavouriteColour
 from example.models import Base, User, Account, Post
-from example.views import UserModelView, PostModelView, AccountModelView
+from example.views import UserModelView, PostModelView, AccountModelView, CustomView
 from xgovuk_flask_admin import XGovukFrontendTheme, XGovukFlaskAdmin, XGovukModelView
 from govuk_frontend_wtf.main import WTFormsHelpers
-from jinja2 import PackageLoader, ChoiceLoader, PrefixLoader
+from jinja2 import PackageLoader, ChoiceLoader, PrefixLoader, FileSystemLoader
 
 
 def _create_app(config_overrides=None, seed: bool = True):
@@ -42,6 +42,7 @@ def _create_app(config_overrides=None, seed: bool = True):
     app.jinja_options = {
         "loader": ChoiceLoader(
             [
+                FileSystemLoader("example/templates"),
                 PrefixLoader(
                     {"govuk_frontend_jinja": PackageLoader("govuk_frontend_jinja")}
                 ),
@@ -65,6 +66,7 @@ def _create_app(config_overrides=None, seed: bool = True):
         admin.add_view(UserModelView(User, db.session, category="Models"))
         admin.add_view(PostModelView(Post, db.session, category="Models"))
         admin.add_view(AccountModelView(Account, db.session, category="Models"))
+        admin.add_view(CustomView(name="Custom View", endpoint="custom"))
 
     if seed:
         seed_database(app, db)
