@@ -549,6 +549,9 @@ class XGovukModelView(ModelView):
         if not self.form_args:
             self.form_args = {}
 
+        # Save original form_args (which may include relationship fields)
+        original_form_args = dict(self.form_args)
+
         converter = self.model_form_converter(self.session, self)
 
         form_args = {}
@@ -565,7 +568,12 @@ class XGovukModelView(ModelView):
         # For each form field, override the default top-level keys with any provided
         # by the subclass.
         for field_name, field_args in form_args.items():
-            form_args[field_name] = {**field_args, **self.form_args.get(field_name, {})}
+            form_args[field_name] = {**field_args, **original_form_args.get(field_name, {})}
+
+        # Preserve form_args for relationship fields (not processed by _iterate_model_fields)
+        for field_name, field_args in original_form_args.items():
+            if field_name not in form_args:
+                form_args[field_name] = field_args
 
         self.form_args = form_args
 

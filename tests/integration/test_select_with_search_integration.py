@@ -239,3 +239,165 @@ class TestSelectWithSearchIntegration:
             # Check that main.css is loaded
             assert "main-" in html
             assert ".css" in html
+
+    def test_get_label_with_string_attribute(self):
+        """Test that get_label can use a string attribute to display relationship options."""
+        # Create a custom view with get_label for the books relationship
+        class CustomAuthorView(XGovukModelView):
+            form_args = {
+                "books": {"get_label": "title"}
+            }
+
+        # Create a fresh app with custom view
+        app = Flask(__name__)
+        app.config["SECRET_KEY"] = "test-secret"
+        app.config["TESTING"] = True
+        app.config["SQLALCHEMY_ENGINES"] = {"default": "sqlite:///:memory:"}
+
+        app.jinja_options = {
+            "loader": ChoiceLoader(
+                [
+                    PrefixLoader(
+                        {"govuk_frontend_jinja": PackageLoader("govuk_frontend_jinja")}
+                    ),
+                    PrefixLoader(
+                        {"govuk_frontend_wtf": PackageLoader("govuk_frontend_wtf")}
+                    ),
+                    PackageLoader("xgovuk_flask_admin"),
+                ]
+            )
+        }
+
+        admin = Admin(app, theme=XGovukFrontendTheme())
+        XGovukFlaskAdmin(app, service_name="Test Service")
+        db = SQLAlchemy(app)
+
+        with app.app_context():
+            Base.metadata.create_all(db.engine)
+            admin.add_view(CustomAuthorView(Author, db.session))
+            admin.add_view(XGovukModelView(Book, db.session))
+
+            # Create test data
+            author = Author(name="Test Author")
+            db.session.add(author)
+            db.session.flush()
+
+            book1 = Book(title="First Book", author_id=author.id)
+            book2 = Book(title="Second Book", author_id=author.id)
+            db.session.add_all([book1, book2])
+            db.session.commit()
+
+            author_id = author.id
+
+        with app.test_client() as client:
+            response = client.get(f"/admin/author/edit/?id={author_id}")
+            assert response.status_code == 200
+
+            html = response.data.decode("utf-8")
+
+            # Check that book titles appear in the options (not default __str__ representation)
+            assert "First Book" in html
+            assert "Second Book" in html
+
+    def test_get_label_with_callable(self):
+        """Test that get_label can use a callable to format relationship options."""
+        # Create a custom view with get_label as a callable
+        class CustomAuthorView(XGovukModelView):
+            form_args = {
+                "books": {"get_label": lambda book: f"{book.title} (ID: {book.id})"}
+            }
+
+        # Create a fresh app with custom view
+        app = Flask(__name__)
+        app.config["SECRET_KEY"] = "test-secret"
+        app.config["TESTING"] = True
+        app.config["SQLALCHEMY_ENGINES"] = {"default": "sqlite:///:memory:"}
+
+        app.jinja_options = {
+            "loader": ChoiceLoader(
+                [
+                    PrefixLoader(
+                        {"govuk_frontend_jinja": PackageLoader("govuk_frontend_jinja")}
+                    ),
+                    PrefixLoader(
+                        {"govuk_frontend_wtf": PackageLoader("govuk_frontend_wtf")}
+                    ),
+                    PackageLoader("xgovuk_flask_admin"),
+                ]
+            )
+        }
+
+        admin = Admin(app, theme=XGovukFrontendTheme())
+        XGovukFlaskAdmin(app, service_name="Test Service")
+        db = SQLAlchemy(app)
+
+        with app.app_context():
+            Base.metadata.create_all(db.engine)
+            admin.add_view(CustomAuthorView(Author, db.session))
+            admin.add_view(XGovukModelView(Book, db.session))
+
+            # Create test data
+            author = Author(name="Test Author")
+            db.session.add(author)
+            db.session.flush()
+
+            book = Book(title="Test Book", author_id=author.id)
+            db.session.add(book)
+            db.session.commit()
+
+            author_id = author.id
+            book_id = book.id
+
+        with app.test_client() as client:
+            response = client.get(f"/admin/author/edit/?id={author_id}")
+            assert response.status_code == 200
+
+            html = response.data.decode("utf-8")
+
+            # Check that the formatted label appears (title + ID)
+            assert f"Test Book (ID: {book_id})" in html
+
+    def test_form_args_preserved_for_relationships(self):
+        """Test that form_args for relationship fields are not lost during form scaffold."""
+        # Create a custom view with form_args for a relationship
+        class CustomAuthorView(XGovukModelView):
+            form_args = {
+                "books": {"get_label": "title", "allow_blank": True}
+            }
+
+        # Create a fresh app with custom view
+        app = Flask(__name__)
+        app.config["SECRET_KEY"] = "test-secret"
+        app.config["TESTING"] = True
+        app.config["SQLALCHEMY_ENGINES"] = {"default": "sqlite:///:memory:"}
+
+        app.jinja_options = {
+            "loader": ChoiceLoader(
+                [
+                    PrefixLoader(
+                        {"govuk_frontend_jinja": PackageLoader("govuk_frontend_jinja")}
+                    ),
+                    PrefixLoader(
+                        {"govuk_frontend_wtf": PackageLoader("govuk_frontend_wtf")}
+                    ),
+                    PackageLoader("xgovuk_flask_admin"),
+                ]
+            )
+        }
+
+        admin = Admin(app, theme=XGovukFrontendTheme())
+        XGovukFlaskAdmin(app, service_name="Test Service")
+        db = SQLAlchemy(app)
+
+        with app.app_context():
+            Base.metadata.create_all(db.engine)
+            view = CustomAuthorView(Author, db.session)
+            admin.add_view(view)
+
+            # Trigger form scaffold (which calls _populate_implicit_form_args)
+            form_class = view.scaffold_form()
+
+            # Verify that form_args for 'books' relationship are preserved
+            assert "books" in view.form_args
+            assert view.form_args["books"]["get_label"] == "title"
+            assert view.form_args["books"]["allow_blank"] is True

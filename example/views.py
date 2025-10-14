@@ -9,7 +9,11 @@ class UserModelView(XGovukModelView):
     can_set_page_size = True
     page_size_options = [10, 15, 25, 50]
 
-    form_args = {"email": {"validators": [Email()]}}
+    form_args = {
+        "email": {"validators": [Email()]},
+        "account": {"get_label": "user.email"},
+        "posts": {"get_label": "title"},
+    }
 
     column_filters = [
         "age",
