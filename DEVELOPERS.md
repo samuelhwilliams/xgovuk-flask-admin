@@ -2,7 +2,7 @@
 
 ### Running tests
 
-Tests can be run against multiple Python versions (eg 3.13 and 3.14) using tox. The test suite is split into 
+Tests can be run against multiple Python versions (eg 3.13 and 3.14) using tox. The test suite is split into
 unit/integration tests and e2e tests to avoid async loop conflicts with playwright:
 
 ```bash
@@ -22,7 +22,7 @@ uv run tox -e py313-e2e       # e2e only
 
 ### Rebuilding GOV.UK Frontend assets
 
-GOV.UK Flask Admin uses and extends the GOV.UK Frontend CSS and JS in order to add functionality required to display 
+GOV.UK Flask Admin uses and extends the GOV.UK Frontend CSS and JS in order to add functionality required to display
 information and action dense admin pages.
 
 These assets are compiled using Flask-Vite.

@@ -28,13 +28,17 @@ window.GOVUK.Modules = window.GOVUK.Modules || {};
 
     AutoSubmit.prototype.init = function () {
         if (!this.module.matches("select")) {
-            console.error("AutoSubmit module must be applied to a select element");
+            console.error(
+                "AutoSubmit module must be applied to a select element",
+            );
             return;
         }
 
         const form = this.module.closest("form");
         if (!form) {
-            console.error("AutoSubmit module requires select to be within a form");
+            console.error(
+                "AutoSubmit module requires select to be within a form",
+            );
             return;
         }
 

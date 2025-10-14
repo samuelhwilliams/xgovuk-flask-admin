@@ -1,4 +1,5 @@
 """Shared pytest fixtures for integration tests."""
+
 from typing import Generator
 
 import pytest
@@ -19,9 +20,15 @@ def get_app_components():
         _app_components = _create_app(
             config_overrides={
                 "TESTING": True,
-                "SQLALCHEMY_ENGINES": {"default": {"url": "sqlite:///:memory:", "echo": True, "connect_args":{"autocommit": False} }},
+                "SQLALCHEMY_ENGINES": {
+                    "default": {
+                        "url": "sqlite:///:memory:",
+                        "echo": True,
+                        "connect_args": {"autocommit": False},
+                    }
+                },
             },
-            seed=False
+            seed=False,
         )
     return _app_components
 
@@ -59,7 +66,9 @@ def db_session(request, app, db: SQLAlchemy) -> Generator[Session, None, None]:
         transaction = connection.begin()
 
         original_configuration = db.sessionmaker.kw.copy()
-        db.sessionmaker.configure(bind=connection, join_transaction_mode="create_savepoint")
+        db.sessionmaker.configure(
+            bind=connection, join_transaction_mode="create_savepoint"
+        )
 
         UserFactory._meta.sqlalchemy_session = db.session
         AccountFactory._meta.sqlalchemy_session = db.session

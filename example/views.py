@@ -59,6 +59,6 @@ class AccountModelView(XGovukModelView):
 
 
 class CustomView(BaseView):
-    @expose('/', methods=('GET',))
+    @expose("/", methods=("GET",))
     def index(self):
-        return self.render('custom_view.html')
+        return self.render("custom_view.html")

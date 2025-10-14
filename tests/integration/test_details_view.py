@@ -1,7 +1,6 @@
 """Integration tests for details view rendering."""
 
 import pytest
-import datetime
 from bs4 import BeautifulSoup
 
 from tests.factories import UserFactory, PostFactory
@@ -128,8 +127,14 @@ class TestDetailsViewRendering:
         )
 
         # Verify that actual script/img elements were NOT created in the DOM
-        scripts = soup.find_all("script", string=lambda text: text and "alert('XSS')" in text)
-        assert len(scripts) == 0, "No script elements should be created from user content"
+        scripts = soup.find_all(
+            "script", string=lambda text: text and "alert('XSS')" in text
+        )
+        assert len(scripts) == 0, (
+            "No script elements should be created from user content"
+        )
 
         imgs_with_onerror = soup.find_all("img", attrs={"onerror": True})
-        assert len(imgs_with_onerror) == 0, "No img elements with onerror should be created"
+        assert len(imgs_with_onerror) == 0, (
+            "No img elements with onerror should be created"
+        )

@@ -55,7 +55,9 @@ class TestTransactionIsolation:
         user2 = UserFactory.create(name="User B")
         post = PostFactory.create(title="Test Post", author=user1)
 
-        print(f"\n[Test 4] Created user1 id={user1.id}, user2 id={user2.id}, post id={post.id}")
+        print(
+            f"\n[Test 4] Created user1 id={user1.id}, user2 id={user2.id}, post id={post.id}"
+        )
 
         all_users = db_session.query(UserFactory._meta.model).all()
         all_posts = db_session.query(PostFactory._meta.model).all()

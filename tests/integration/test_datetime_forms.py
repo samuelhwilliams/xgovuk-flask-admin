@@ -51,27 +51,39 @@ class TestDateTimeFormRendering:
         # Check that datetime values are populated by finding specific input fields
         day_input = soup.find("input", id="last_logged_in_at-day")
         assert day_input is not None, "Day input not found"
-        assert day_input.get("value") == "15", f"Expected day=15, got {day_input.get('value')}"
+        assert day_input.get("value") == "15", (
+            f"Expected day=15, got {day_input.get('value')}"
+        )
 
         month_input = soup.find("input", id="last_logged_in_at-month")
         assert month_input is not None, "Month input not found"
-        assert month_input.get("value") == "06", f"Expected month=06, got {month_input.get('value')}"
+        assert month_input.get("value") == "06", (
+            f"Expected month=06, got {month_input.get('value')}"
+        )
 
         year_input = soup.find("input", id="last_logged_in_at-year")
         assert year_input is not None, "Year input not found"
-        assert year_input.get("value") == "2024", f"Expected year=2024, got {year_input.get('value')}"
+        assert year_input.get("value") == "2024", (
+            f"Expected year=2024, got {year_input.get('value')}"
+        )
 
         hour_input = soup.find("input", id="last_logged_in_at-hour")
         assert hour_input is not None, "Hour input not found"
-        assert hour_input.get("value") == "14", f"Expected hour=14, got {hour_input.get('value')}"
+        assert hour_input.get("value") == "14", (
+            f"Expected hour=14, got {hour_input.get('value')}"
+        )
 
         minute_input = soup.find("input", id="last_logged_in_at-minute")
         assert minute_input is not None, "Minute input not found"
-        assert minute_input.get("value") == "30", f"Expected minute=30, got {minute_input.get('value')}"
+        assert minute_input.get("value") == "30", (
+            f"Expected minute=30, got {minute_input.get('value')}"
+        )
 
         second_input = soup.find("input", id="last_logged_in_at-second")
         assert second_input is not None, "Second input not found"
-        assert second_input.get("value") == "45", f"Expected second=45, got {second_input.get('value')}"
+        assert second_input.get("value") == "45", (
+            f"Expected second=45, got {second_input.get('value')}"
+        )
 
         # Cleanup
         with app.app_context():

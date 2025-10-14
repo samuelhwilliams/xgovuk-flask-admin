@@ -24,10 +24,13 @@ class UserFactory(factory.alchemy.SQLAlchemyModelFactory):
     name = FactoryFaker("name")
     age = factory.Faker("random_int", min=18, max=100)
     job = FactoryFaker("job")
-    favourite_colour = factory.LazyFunction(lambda: random.choice(list(FavouriteColour)))
+    favourite_colour = factory.LazyFunction(
+        lambda: random.choice(list(FavouriteColour))
+    )
     created_at = FactoryFaker("date_this_year")
     last_logged_in_at = factory.LazyFunction(
-        lambda: datetime.datetime.now() - datetime.timedelta(days=random.randint(0, 365))
+        lambda: datetime.datetime.now()
+        - datetime.timedelta(days=random.randint(0, 365))
         if random.random() > 0.3
         else None
     )
@@ -69,7 +72,8 @@ class PostFactory(factory.alchemy.SQLAlchemyModelFactory):
     author = factory.SubFactory(UserFactory)
     author_id = factory.LazyAttribute(lambda obj: obj.author.id)
     published_at = factory.LazyFunction(
-        lambda: datetime.datetime.now() - datetime.timedelta(days=random.randint(0, 180))
+        lambda: datetime.datetime.now()
+        - datetime.timedelta(days=random.randint(0, 180))
         if random.random() > 0.3
         else None
     )

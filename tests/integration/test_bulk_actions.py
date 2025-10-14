@@ -53,7 +53,9 @@ class TestBulkActions:
     @pytest.mark.xfail(
         reason="Not implemented: Assert users deleted and success message"
     )
-    def test_bulk_delete_executes_on_confirmation(self, client, sample_users, db_session):
+    def test_bulk_delete_executes_on_confirmation(
+        self, client, sample_users, db_session
+    ):
         """Test bulk delete executes after confirmation."""
         user_ids = [str(u.id) for u in sample_users[:2]]
         data = {"action": "delete", "rowid": user_ids, "url": "/admin/user/"}

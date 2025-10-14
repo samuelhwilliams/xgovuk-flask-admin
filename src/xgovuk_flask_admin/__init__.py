@@ -24,39 +24,6 @@ from sqlalchemy.orm import ColumnProperty
 from wtforms import validators, SelectField
 from enum import Enum
 
-# Monkey patch for Flask-Admin fields to work with govuk_frontend_wtf widgets
-# These fields don't have _value() method which the widgets expect
-try:
-    from flask_admin.form.fields import Select2Field
-
-    if not hasattr(Select2Field, "_value"):
-
-        def _value(self):
-            if self.data is not None:
-                return str(self.data)
-            return ""
-
-        Select2Field._value = _value
-except ImportError:
-    pass
-
-try:
-    from wtforms_sqlalchemy.fields import QuerySelectField
-
-    if not hasattr(QuerySelectField, "_value"):
-
-        def _value(self):
-            if self.data is not None:
-                # For relationship fields, get the primary key value
-                if hasattr(self.data, "id"):
-                    return str(self.data.id)
-                return str(self.data)
-            return ""
-
-        QuerySelectField._value = _value
-except ImportError:
-    pass
-
 
 ROOT_DIR = Path(__file__).parent
 

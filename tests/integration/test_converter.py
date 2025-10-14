@@ -9,7 +9,7 @@ from xgovuk_flask_admin.widgets import GovDateInput
 class TestXGovukAdminModelConverter:
     """Test form field conversion for GOV.UK widgets."""
 
-    def test_maps_string_to_gov_text_input(self,  user_model_view):
+    def test_maps_string_to_gov_text_input(self, user_model_view):
         """Test String columns get GovTextInput widget."""
         form = user_model_view.create_form()
 
