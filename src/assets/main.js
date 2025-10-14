@@ -2,17 +2,25 @@ import { initAll } from "govuk-frontend";
 import { initAll as initAllMOJ } from "@ministryofjustice/frontend";
 import { FilterToggleButton } from "@ministryofjustice/frontend/moj/components/filter-toggle-button/filter-toggle-button.mjs";
 import "./components/select-with-search.js";
+import "./components/auto-submit.js";
 
 initAll();
 initAllMOJ();
 
 // Initialize GOVUK modules on page load
 document.addEventListener("DOMContentLoaded", () => {
-    const modules = document.querySelectorAll(
+    const selectWithSearchModules = document.querySelectorAll(
         '[data-module="select-with-search"]',
     );
-    modules.forEach((module) => {
+    selectWithSearchModules.forEach((module) => {
         new window.GOVUK.Modules.SelectWithSearch(module).init();
+    });
+
+    const autoSubmitModules = document.querySelectorAll(
+        '[data-module="auto-submit"]',
+    );
+    autoSubmitModules.forEach((module) => {
+        new window.GOVUK.Modules.AutoSubmit(module).init();
     });
 });
 
