@@ -9,7 +9,8 @@ from sqlalchemy import ForeignKey
 from sqlalchemy.orm import DeclarativeBase, Mapped, relationship
 from sqlalchemy.testing.schema import mapped_column
 
-from xgovuk_flask_admin import XGovukFrontendTheme, XGovukModelView, XGovukFlaskAdmin
+from xgovuk_flask_admin.theme import XGovukFrontendTheme
+from xgovuk_flask_admin import XGovukModelView, XGovukFlaskAdmin
 
 
 class Base(DeclarativeBase):

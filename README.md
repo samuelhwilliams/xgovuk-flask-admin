@@ -19,17 +19,18 @@ from flask import Flask
 from jinja2 import PackageLoader, ChoiceLoader, PrefixLoader
 
 from flask_admin import Admin
-from xgovuk_flask_admin import XGovukFlaskAdmin, XGovukFrontendTheme
+from xgovuk_flask_admin import XGovukFlaskAdmin
+from xgovuk_flask_admin.theme import XGovukFrontendTheme
 
 app = Flask(...)
 app.jinja_options = {
-    "loader": ChoiceLoader(
-        [
-            PrefixLoader({"govuk_frontend_jinja": PackageLoader("govuk_frontend_jinja")}),
-            PrefixLoader({"govuk_frontend_wtf": PackageLoader("govuk_frontend_wtf")}),
-            PackageLoader("xgovuk_flask_admin"),
-        ]
-    )
+  "loader": ChoiceLoader(
+    [
+      PrefixLoader({"govuk_frontend_jinja": PackageLoader("govuk_frontend_jinja")}),
+      PrefixLoader({"govuk_frontend_wtf": PackageLoader("govuk_frontend_wtf")}),
+      PackageLoader("xgovuk_flask_admin"),
+    ]
+  )
 }
 
 admin = Admin(app, theme=XGovukFrontendTheme())

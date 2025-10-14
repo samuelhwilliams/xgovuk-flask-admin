@@ -5,8 +5,14 @@ from flask_admin.contrib.sqla import filters as sqla_filters
 from sqlalchemy import Column, Integer, String, DateTime, Boolean
 from sqlalchemy.orm import declarative_base
 
-from xgovuk_flask_admin import XGovukFilterConverter
-
+from xgovuk_flask_admin.filters import (
+    XGovukFilterConverter,
+    DateAfterFilter,
+    DateBeforeFilter,
+    DateTimeEqualFilter,
+    DateTimeAfterFilter,
+    DateTimeBeforeFilter,
+)
 
 Base = declarative_base()
 
@@ -212,7 +218,6 @@ class TestXGovukFilterConverter:
     def test_date_filters_exclude_empty_for_non_nullable(self, converter):
         """Test that non-nullable date columns don't get FilterEmpty."""
         from sqlalchemy import Date
-        from xgovuk_flask_admin import DateAfterFilter, DateBeforeFilter
 
         column = Column("test_date", Date, nullable=False)
 
@@ -245,11 +250,6 @@ class TestXGovukFilterConverter:
 
     def test_datetime_filters_exclude_empty_for_non_nullable(self, converter):
         """Test that non-nullable datetime columns don't get FilterEmpty."""
-        from xgovuk_flask_admin import (
-            DateTimeEqualFilter,
-            DateTimeAfterFilter,
-            DateTimeBeforeFilter,
-        )
 
         column = Column("test_datetime", DateTime, nullable=False)
 

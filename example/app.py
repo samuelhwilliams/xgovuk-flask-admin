@@ -14,7 +14,8 @@ from flask_sqlalchemy_lite import SQLAlchemy
 from example.enums import FavouriteColour
 from example.models import Base, User, Account, Post
 from example.views import UserModelView, PostModelView, AccountModelView, CustomView
-from xgovuk_flask_admin import XGovukFrontendTheme, XGovukFlaskAdmin
+from xgovuk_flask_admin import XGovukFlaskAdmin
+from xgovuk_flask_admin.theme import XGovukFrontendTheme
 from govuk_frontend_wtf.main import WTFormsHelpers
 from jinja2 import PackageLoader, ChoiceLoader, PrefixLoader, FileSystemLoader
 

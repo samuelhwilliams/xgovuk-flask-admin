@@ -1,7 +1,7 @@
 """Unit tests for XGovukFrontendTheme."""
 
 import pytest
-from xgovuk_flask_admin import XGovukFrontendTheme
+from xgovuk_flask_admin.theme import XGovukFrontendTheme
 
 
 @pytest.mark.unit

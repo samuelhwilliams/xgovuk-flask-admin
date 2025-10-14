@@ -6,7 +6,8 @@ from flask_admin import Admin
 from flask_sqlalchemy_lite import SQLAlchemy
 from jinja2 import PackageLoader, ChoiceLoader, PrefixLoader
 
-from xgovuk_flask_admin import XGovukFrontendTheme, XGovukModelView, XGovukFlaskAdmin
+from xgovuk_flask_admin.theme import XGovukFrontendTheme
+from xgovuk_flask_admin import XGovukModelView, XGovukFlaskAdmin
 from example.models import Base, User
 from tests.factories import UserFactory
 
