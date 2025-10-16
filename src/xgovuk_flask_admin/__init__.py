@@ -23,6 +23,7 @@ from xgovuk_flask_admin.widgets import (
     GovSelectWithSearch,
     GovDateInput,
     GovDateTimeInput,
+    XGovCheckboxInput,
 )
 from sqlalchemy.orm import ColumnProperty
 from wtforms import validators, SelectField
@@ -109,7 +110,7 @@ class XGovukAdminModelConverter(AdminModelConverter):
         self.sqlalchemy_type_field_args = {
             "String": {"widget": GovTextInput()},
             "Integer": {"widget": GovTextInput()},
-            "Boolean": {"widget": GovCheckboxInput()},
+            "Boolean": {"widget": XGovCheckboxInput()},
             "Date": {"widget": GovDateInput(), "format": "%d %m %Y"},
             "DateTime": {"widget": GovDateTimeInput(), "format": "%d %m %Y %H %M %S"},
         }

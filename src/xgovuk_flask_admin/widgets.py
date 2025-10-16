@@ -1,7 +1,7 @@
 """Custom WTForms widgets for xgovuk-flask-admin."""
 
 from govuk_frontend_wtf.gov_form_base import GovFormBase
-from govuk_frontend_wtf.wtforms_widgets import GovDateInput as _GovDateInput
+from govuk_frontend_wtf.wtforms_widgets import GovDateInput as _GovDateInput, GovCheckboxInput
 from wtforms.widgets.core import Select
 
 
@@ -198,4 +198,22 @@ class GovDateTimeInput(GovFormBase):
                 },
             ],
         )
+        return params
+
+
+class XGovCheckboxInput(GovCheckboxInput):
+    """Addresses a bug in govuk-frontend-jinja/govuk-frontend-wtf
+
+    https://github.com/LandRegistry/govuk-frontend-wtf/issues/112
+    """
+    def map_gov_params(self, field, **kwargs):
+        """If a checkbox input has no description, strip the `hint` from its params otherwise it can render as `None`
+        on the page."""
+        params = super().map_gov_params(field, **kwargs)
+
+        hint = params.get('hint')
+        if hint:
+            if 'text' in hint and hint['text'] is None:
+                params.pop('hint')
+
         return params
