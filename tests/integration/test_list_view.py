@@ -163,6 +163,7 @@ class TestListViewCanEdit:
                     User.__table__.c.favourite_colour.type.enum_class
                 )[0],
                 created_at=datetime.date.today(),
+                active=True,
             )
             db.session.add(user)
             db.session.commit()
@@ -246,6 +247,7 @@ class TestListViewCanEdit:
                     User.__table__.c.favourite_colour.type.enum_class
                 )[0],
                 created_at=datetime.date.today(),
+                active=True,
             )
             db.session.add(user)
             db.session.commit()

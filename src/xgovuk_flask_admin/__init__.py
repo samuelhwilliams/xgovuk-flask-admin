@@ -8,7 +8,7 @@ from flask_admin.contrib.sqla import ModelView
 from flask_admin.contrib.sqla.form import AdminModelConverter
 from flask_admin.contrib.sqla.tools import is_relationship
 from flask_admin.model.form import converts
-from govuk_frontend_wtf.wtforms_widgets import GovTextInput, GovSelect
+from govuk_frontend_wtf.wtforms_widgets import GovTextInput, GovSelect, GovCheckboxInput
 
 from xgovuk_flask_admin.assets import (
     xgovuk_flask_admin_include_css,
@@ -109,6 +109,7 @@ class XGovukAdminModelConverter(AdminModelConverter):
         self.sqlalchemy_type_field_args = {
             "String": {"widget": GovTextInput()},
             "Integer": {"widget": GovTextInput()},
+            "Boolean": {"widget": GovCheckboxInput()},
             "Date": {"widget": GovDateInput(), "format": "%d %m %Y"},
             "DateTime": {"widget": GovDateTimeInput(), "format": "%d %m %Y %H %M %S"},
         }
@@ -606,6 +607,13 @@ class XGovukModelView(ModelView):
                     widget_args["fieldset"]["legend"]["classes"] = (
                         "govuk-fieldset__legend--s"
                     )
+            elif column_type_name == "Boolean":
+                # For Boolean/checkbox fields: add bold to label
+                # Checkboxes use label styling but may need specific classes
+                if "label" not in widget_args:
+                    widget_args["label"] = {}
+                if "classes" not in widget_args["label"]:
+                    widget_args["label"]["classes"] = "govuk-label--s"
             else:
                 # For other fields: add bold to label
                 if "label" not in widget_args:

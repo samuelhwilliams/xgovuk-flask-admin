@@ -29,6 +29,7 @@ class User(Base):
     )
     created_at: Mapped[datetime.date]
     last_logged_in_at: Mapped[Optional[datetime.datetime]]
+    active: Mapped[bool]
 
 
 class Account(Base):

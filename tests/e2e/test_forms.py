@@ -95,6 +95,7 @@ class TestFormSubmission:
         page.fill("#created_at-day", "15")
         page.fill("#created_at-month", "6")
         page.fill("#created_at-year", "2024")
+        page.check('input[name="active"]')
 
         page.click('input[type="submit"]')
 
@@ -116,6 +117,99 @@ class TestFormSubmission:
                 found_new_user = True
                 break
         assert found_new_user, "Expected to find newly created user in list view"
+
+    def test_checkbox_form_submission(self, page):
+        """Test checkbox field submits correctly and persists to database."""
+        # Test creating with checkbox checked (active=True)
+        page.goto(f"{page.base_url}/admin/user/new/")
+
+        page.fill('input[name="email"]', "checkbox-test-active@example.com")
+        page.fill('input[name="name"]', "Active User")
+        page.fill('input[name="age"]', "28")
+        page.fill('input[name="job"]', "Developer")
+        page.select_option("#favourite_colour", "BLUE")
+        page.fill("#created_at-day", "10")
+        page.fill("#created_at-month", "3")
+        page.fill("#created_at-year", "2024")
+
+        # Check the active checkbox
+        active_checkbox = page.locator('input[name="active"]')
+        active_checkbox.check()
+        assert active_checkbox.is_checked(), "Active checkbox should be checked"
+
+        page.click('input[type="submit"]')
+
+        success_banner = page.locator(".govuk-notification-banner--success")
+        assert success_banner.is_visible(), "Expected success notification"
+
+        # Navigate to the list view and find the created user
+        page.goto(f"{page.base_url}/admin/user/")
+
+        # Open filter panel to access search
+        filter_toggle = page.locator(".moj-action-bar__filter button")
+        filter_toggle.click()
+
+        # Search for the active user to verify it was created
+        search_input = page.locator('input[name="search"]')
+        search_input.fill("checkbox-test-active@example.com")
+        search_button = page.locator('button[type="submit"]:has-text("Apply filters")')
+        search_button.click()
+
+        # Find the user row and click edit
+        edit_link = page.locator('a:has-text("Edit")').first
+        edit_link.click()
+
+        # Verify the checkbox is checked when editing (confirms database state)
+        active_checkbox_edit = page.locator('input[name="active"]')
+        assert active_checkbox_edit.is_checked(), (
+            "Active checkbox should be checked when editing (database value should be True)"
+        )
+
+        # Test creating with checkbox unchecked (active=False)
+        page.goto(f"{page.base_url}/admin/user/new/")
+
+        page.fill('input[name="email"]', "checkbox-test-inactive@example.com")
+        page.fill('input[name="name"]', "Inactive User")
+        page.fill('input[name="age"]', "32")
+        page.fill('input[name="job"]', "Manager")
+        page.select_option("#favourite_colour", "YELLOW")
+        page.fill("#created_at-day", "20")
+        page.fill("#created_at-month", "7")
+        page.fill("#created_at-year", "2024")
+
+        # Ensure the active checkbox is unchecked
+        active_checkbox = page.locator('input[name="active"]')
+        if active_checkbox.is_checked():
+            active_checkbox.uncheck()
+        assert not active_checkbox.is_checked(), "Active checkbox should be unchecked"
+
+        page.click('input[type="submit"]')
+
+        success_banner = page.locator(".govuk-notification-banner--success")
+        assert success_banner.is_visible(), "Expected success notification"
+
+        # Navigate to the list view and find the inactive user
+        page.goto(f"{page.base_url}/admin/user/")
+
+        # Open filter panel to access search
+        filter_toggle = page.locator(".moj-action-bar__filter button")
+        filter_toggle.click()
+
+        # Search for the inactive user
+        search_input = page.locator('input[name="search"]')
+        search_input.fill("checkbox-test-inactive@example.com")
+        search_button = page.locator('button[type="submit"]:has-text("Apply filters")')
+        search_button.click()
+
+        # Find the user row and click edit
+        edit_link = page.locator('a:has-text("Edit")').first
+        edit_link.click()
+
+        # Verify the checkbox is unchecked when editing (confirms database value is False)
+        active_checkbox_edit = page.locator('input[name="active"]')
+        assert not active_checkbox_edit.is_checked(), (
+            "Active checkbox should be unchecked when editing (database value should be False)"
+        )
 
     def test_edit_form_submission(self, page):
         """Test successful record update via form."""
@@ -215,3 +309,40 @@ class TestFormComponents:
 
         assert submit_button.is_visible(), "Submit button should be visible"
         assert submit_button.is_enabled(), "Submit button should be enabled"
+
+    def test_govuk_checkbox_classes(self, page):
+        """Test boolean fields render as GOV.UK checkboxes."""
+        page.goto(f"{page.base_url}/admin/user/new/")
+
+        # Check for GOV.UK checkbox container
+        checkbox_containers = page.locator(".govuk-checkboxes")
+        assert checkbox_containers.count() > 0, (
+            "Expected checkbox container with GOV.UK classes"
+        )
+
+        # Check for the active field checkbox
+        active_checkbox = page.locator('input[name="active"]')
+        assert active_checkbox.count() > 0, "Expected active checkbox field"
+
+        # Verify it has GOV.UK checkbox input class
+        checkbox_input_class = active_checkbox.get_attribute("class")
+        assert "govuk-checkboxes__input" in checkbox_input_class, (
+            f"Expected govuk-checkboxes__input class, got: {checkbox_input_class}"
+        )
+
+        # Verify it's a checkbox type
+        assert active_checkbox.get_attribute("type") == "checkbox", (
+            "Active field should be a checkbox input"
+        )
+
+        # Check for associated label with GOV.UK class
+        active_label = page.locator('label[for="active"]')
+        assert active_label.count() > 0, "Expected label for active checkbox"
+        label_class = active_label.get_attribute("class")
+        assert "govuk-checkboxes__label" in label_class, (
+            f"Expected govuk-checkboxes__label class, got: {label_class}"
+        )
+
+        # Verify form group has GOV.UK class
+        form_groups = page.locator(".govuk-form-group")
+        assert form_groups.count() > 0, "Expected form groups with GOV.UK classes"

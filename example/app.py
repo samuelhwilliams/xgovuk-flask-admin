@@ -104,6 +104,7 @@ def seed_database(app, db, num_users=8):
                 job="blah blah",
                 favourite_colour=random.choice(list(FavouriteColour)),
                 last_logged_in_at=last_login,
+                active=random.choice([True, False]),
             )
             db.session.add(u)
             db.session.flush()

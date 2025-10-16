@@ -37,6 +37,7 @@ class TestDateTimeFormRendering:
                 favourite_colour="RED",
                 created_at=datetime(2024, 6, 15).date(),
                 last_logged_in_at=datetime(2024, 6, 15, 14, 30, 45),
+                active=True,
             )
             db_session.add(user)
             db_session.commit()

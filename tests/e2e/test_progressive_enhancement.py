@@ -46,6 +46,7 @@ class TestNoJavaScript:
         page_no_js.fill('input[id="created_at-day"]', "1")
         page_no_js.fill('input[id="created_at-month"]', "1")
         page_no_js.fill('input[id="created_at-year"]', "2024")
+        page_no_js.locator('input[id="active"]').check()
 
         page_no_js.click('input[type="submit"]')
 
@@ -64,9 +65,10 @@ class TestNoJavaScript:
             "Expected success message"
         )
 
-        # Assert new record visible
+        # Verify record was created by searching for it
+        page_no_js.goto(f"{page_no_js.base_url}/admin/user/?search=nojs@example.com")
         assert page_no_js.locator("text=nojs@example.com").count() > 0, (
-            "Expected to find newly created user in list"
+            "Expected to find newly created user in search results"
         )
 
     def test_date_filter_works_without_js(self, page_no_js):

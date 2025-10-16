@@ -34,6 +34,7 @@ class UserFactory(factory.alchemy.SQLAlchemyModelFactory):
         if random.random() > 0.3
         else None
     )
+    active = factory.LazyFunction(lambda: random.choice([True, False]))
 
 
 class AccountFactory(factory.alchemy.SQLAlchemyModelFactory):

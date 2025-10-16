@@ -22,6 +22,7 @@ class UserModelView(XGovukModelView):
         "created_at",
         "favourite_colour",
         "last_logged_in_at",
+        "active",
     ]
 
     column_searchable_list = ["email", "name"]

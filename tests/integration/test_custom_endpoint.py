@@ -71,6 +71,7 @@ class TestCustomEndpoint:
                 job="Test Job",
                 favourite_colour=list(FavouriteColour)[0],
                 created_at=datetime.date.today(),
+                active=True
             )
             db.session.add(user)
             db.session.commit()
@@ -105,6 +106,7 @@ class TestCustomEndpoint:
                 job="Job Title",
                 favourite_colour=list(FavouriteColour)[0],
                 created_at=datetime.date.today(),
+                active=True
             )
             db.session.add(user)
             db.session.commit()

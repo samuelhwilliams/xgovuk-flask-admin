@@ -23,6 +23,7 @@ class TestPagination:
                     job=f"Job {i % 5}",
                     favourite_colour=list(FavouriteColour)[i % 3],
                     created_at=datetime.date(2024, 1, 1) + datetime.timedelta(days=i),
+                    active=True,
                 )
                 db_session.add(user)
                 users.append(user)

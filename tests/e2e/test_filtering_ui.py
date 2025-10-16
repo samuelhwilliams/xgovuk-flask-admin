@@ -270,6 +270,33 @@ class TestFilterInteractions:
             "Expected to find favourite_colour enum select with 3 colour options"
         )
 
+    def test_boolean_filter_available(self, page):
+        """Test boolean filter is available in filter panel."""
+        page.goto(f"{page.base_url}/admin/user/")
+
+        # Open filter panel
+        filter_toggle = page.locator(".moj-action-bar__filter button")
+        filter_toggle.click()
+
+        # Verify Active filter section exists in the accordion
+        active_section = page.locator('button:has-text("Active")')
+        assert active_section.count() > 0, "Expected Active filter section"
+        assert active_section.is_visible(), "Active filter section should be visible"
+
+        # Expand the Active filter section
+        active_section.click()
+
+        # Verify that select dropdowns appear within the Active section
+        # Boolean filters render as GOV.UK select dropdowns with Yes/No options
+        all_selects = page.locator("select.govuk-select")
+        visible_selects = []
+        for i in range(all_selects.count()):
+            if all_selects.nth(i).is_visible():
+                visible_selects.append(all_selects.nth(i))
+
+        # Should have at least some visible selects after expanding Active
+        assert len(visible_selects) > 0, "Expected visible select dropdowns after expanding Active filter"
+
     def test_filter_button_shows_active_count(self, page):
         """Test filter toggle button shows active filter count."""
         # Test with no filters - should not show count
