@@ -59,6 +59,18 @@ jobs:
       - name: Run e2e tests
         if: always()
         run: uv run pytest -k "e2e"
+        env:
+          CI: true
+
+      - name: Upload screenshots to Argos
+        if: always() && matrix.env == '3.14'
+        continue-on-error: true
+        run: |
+          if [ -d "screenshots" ] && [ "$(ls -A screenshots)" ]; then
+            npx @argos-ci/cli upload screenshots --token "${{ secrets.ARGOS_TOKEN }}"
+          else
+            echo "No screenshots directory or it's empty, skipping upload"
+          fi
 
       - name: Upload coverage HTML report
         if: always() && matrix.env == '3.14'
