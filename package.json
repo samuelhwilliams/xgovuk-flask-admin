@@ -10,7 +10,7 @@
   "dependencies": {
     "@ministryofjustice/frontend": "^6.0.0",
     "choices.js": "^11.1.0",
-    "govuk-frontend": "^5.12.0",
+    "govuk-frontend": "^5.13.0",
     "moment": "^2.30.1"
   },
   "devDependencies": {

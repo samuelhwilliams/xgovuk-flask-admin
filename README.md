@@ -186,7 +186,8 @@ The latest release of `xgovuk-flask-admin` will generally track the latest relea
 
 | Package              | GOV.UK Frontend | govuk-frontend-jinja | govuk-frontend-wtf |
 |----------------------|-----------------|----------------------|--------------------|
-| >=0.1.0              | 5.12.0          | 3.8.0                | 3.2.0              |
+| >=0.1.0              | 5.13.0          | 3.9.0                | 3.2.0              |
+| < 0.1.0              | 5.12.0          | 3.8.0                | 3.2.0              |
 
 `xgovuk-flask-admin` uses `govuk-colour("purple")` as its brand colour on the (somewhat unfounded/unresearched) belief
 that this isn't a colour used for branding in many places, so it's broadly "available". Given it will be unfamiliar, it

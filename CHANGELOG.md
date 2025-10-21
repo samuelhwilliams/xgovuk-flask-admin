@@ -2,4 +2,8 @@
 
 ## 0.1.0
 
+- Bump GOV.UK Frontend to 5.13.0 and govuk-frontend-jinja to 3.9.0
+
+## 0.0.1-8
+
 - Initial release.
