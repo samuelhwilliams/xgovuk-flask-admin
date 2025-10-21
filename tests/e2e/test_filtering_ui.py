@@ -66,7 +66,7 @@ class TestFilterInteractions:
 
         filter_toggle.click()
 
-        assert filter_panel.is_visible(), (
+        expect(filter_panel).to_be_visible(), (
             "Expected filter panel to be visible after click"
         )
         assert "Hide filter" in filter_toggle.text_content(), (
