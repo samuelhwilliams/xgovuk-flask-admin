@@ -45,7 +45,7 @@ class TestFilterInteractions:
             "Page size selector should show 10 after reload"
         )
 
-    def test_filter_details_expands_collapses(self, page):
+    def test_filter_details_expands_collapses(self, page, screenshot):
         """Test clicking filter toggle button shows/hides filters."""
         page.goto(f"{page.base_url}/admin/user/")
 
@@ -61,6 +61,9 @@ class TestFilterInteractions:
             "Expected 'Show filter' text"
         )
 
+        # Capture filter panel closed
+        screenshot(page, "list-view-filters-closed")
+
         filter_toggle.click()
 
         assert filter_panel.is_visible(), (
@@ -69,6 +72,9 @@ class TestFilterInteractions:
         assert "Hide filter" in filter_toggle.text_content(), (
             "Expected 'Hide filter' text"
         )
+
+        # Capture filter panel open
+        screenshot(page, "list-view-filters-open")
 
         filter_toggle.click()
 
@@ -103,7 +109,7 @@ class TestFilterInteractions:
         date_input_container = page.locator(".govuk-date-input")
         assert date_input_container.count() > 0, "Expected GOV.UK date input component"
 
-    def test_filter_submission_updates_results(self, page):
+    def test_filter_submission_updates_results(self, page, screenshot):
         """Test submitting filter updates table."""
         page.goto(f"{page.base_url}/admin/user/")
 
@@ -134,6 +140,9 @@ class TestFilterInteractions:
 
         table = page.locator(".govuk-table")
         assert table.is_visible(), "Expected table to be visible after filtering"
+
+        # Capture active filters with tags
+        screenshot(page, "list-view-active-filters")
 
     def test_filter_tag_removal(self, page):
         """Test clicking × on filter tag removes filter."""
@@ -297,7 +306,7 @@ class TestFilterInteractions:
         # Should have at least some visible selects after expanding Active
         assert len(visible_selects) > 0, "Expected visible select dropdowns after expanding Active filter"
 
-    def test_filter_button_shows_active_count(self, page):
+    def test_filter_button_shows_active_count(self, page, screenshot, mobile_page):
         """Test filter toggle button shows active filter count."""
         # Test with no filters - should not show count
         page.goto(f"{page.base_url}/admin/user/")
@@ -337,6 +346,14 @@ class TestFilterInteractions:
 
         expect(filter_toggle).to_contain_text("Show filters")
         expect(filter_toggle).to_contain_text("(2 active)")
+
+        # Also test mobile view with filters open
+        mobile_page.goto(f"{mobile_page.base_url}/admin/user/")
+        mobile_filter_toggle = mobile_page.locator(".moj-action-bar__filter button")
+        mobile_filter_toggle.click()
+        mobile_filter_panel = mobile_page.locator(".moj-filter")
+        expect(mobile_filter_panel).to_be_visible()
+        screenshot(mobile_page, "list-view-filters-open")
 
 
 @pytest.mark.e2e

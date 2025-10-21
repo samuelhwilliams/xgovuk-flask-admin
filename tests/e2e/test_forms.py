@@ -7,9 +7,13 @@ import pytest
 class TestFormValidation:
     """Test client-side and server-side form validation."""
 
-    def test_required_field_validation(self, page):
+    def test_required_field_validation(self, page, screenshot):
         """Test required field validation shows errors."""
         page.goto(f"{page.base_url}/admin/user/new/")
+
+        # Capture clean form state
+        screenshot(page, "form-create-empty")
+
         page.click('input[type="submit"]')
 
         error_messages = page.locator(".govuk-error-message")
@@ -19,6 +23,9 @@ class TestFormValidation:
 
         error_form_groups = page.locator(".govuk-form-group--error")
         assert error_form_groups.count() > 0, "Expected form groups to have error class"
+
+        # Capture form with validation errors
+        screenshot(page, "form-create-validation-errors")
 
     def test_email_validation(self, page):
         """Test email field validates format."""
@@ -83,7 +90,7 @@ class TestFormValidation:
 class TestFormSubmission:
     """Test successful form submission."""
 
-    def test_create_form_submission(self, page):
+    def test_create_form_submission(self, page, screenshot):
         """Test successful record creation via form."""
         page.goto(f"{page.base_url}/admin/user/new/")
 
@@ -108,6 +115,9 @@ class TestFormSubmission:
         assert "Record was successfully created." in success_text, (
             f"Expected 'Record was successfully created.' message, got: {success_text}"
         )
+
+        # Capture success notification
+        screenshot(page, "list-view-success-notification")
 
         table_rows = page.locator(".govuk-table__body .govuk-table__row")
         found_new_user = False

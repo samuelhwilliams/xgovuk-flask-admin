@@ -6,6 +6,7 @@ import subprocess
 import time
 import requests
 import sys
+from pathlib import Path
 
 
 @pytest.fixture(scope="session")
@@ -138,3 +139,54 @@ def tablet_page(browser, flask_server):
     page.set_default_timeout(2500)  # Set default timeout to 5 seconds
     yield page
     context.close()
+
+
+# Screenshot directory for visual regression testing
+SCREENSHOT_DIR = Path(__file__).parent.parent.parent / "screenshots"
+SCREENSHOT_DIR.mkdir(exist_ok=True)
+
+
+@pytest.fixture
+def screenshot(request):
+    """Fixture to capture screenshots for visual regression testing.
+
+    Screenshots are only captured when CI or VISUAL_TESTS environment variables are set.
+    This allows tests to call screenshot() unconditionally without slowing down local runs.
+
+    Usage in tests:
+        def test_my_feature(page, screenshot):
+            page.goto("/some/url")
+            screenshot(page, "my-feature-name")  # Creates my-feature-name-desktop.png
+
+        def test_mobile_feature(mobile_page, screenshot):
+            mobile_page.goto("/some/url")
+            screenshot(mobile_page, "my-feature-name")  # Creates my-feature-name-mobile.png
+    """
+    import os
+
+    def _screenshot(page_obj, name: str, full_page: bool = True):
+        """Capture a screenshot for visual regression testing.
+
+        Args:
+            page_obj: Playwright page object (page, mobile_page, or tablet_page)
+            name: Base name for the screenshot (without extension)
+            full_page: Whether to capture the full scrollable page (default: True)
+        """
+        # Only capture screenshots in CI or when explicitly enabled
+        if not (os.getenv("CI") or os.getenv("VISUAL_TESTS")):
+            return
+
+        # Detect viewport size from page to determine suffix
+        viewport = page_obj.viewport_size
+        if viewport["width"] == 375:
+            suffix = "mobile"
+        elif viewport["width"] == 768:
+            suffix = "tablet"
+        else:
+            suffix = "desktop"
+
+        filename = f"{name}-{suffix}.png"
+        screenshot_path = SCREENSHOT_DIR / filename
+        page_obj.screenshot(path=str(screenshot_path), full_page=full_page)
+
+    return _screenshot
