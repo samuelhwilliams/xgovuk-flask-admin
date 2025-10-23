@@ -1,6 +1,6 @@
 [project]
 name = "xgovuk-flask-admin"
-version = "0.1.0"
+version = "0.1.1"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -47,9 +47,6 @@ include = [
 force-include = { "src/xgovuk_flask_admin/static" = "src/xgovuk_flask_admin/static" }
 
 [tool.uv]
-
-[tool.uv.sources]
-flask-admin = { git = "https://github.com/flask-admin/flask-admin", branch = "master" }
 
 [tool.coverage.run]
 source = ["src/xgovuk_flask_admin"]

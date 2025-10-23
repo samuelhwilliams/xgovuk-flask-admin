@@ -1,5 +1,6 @@
 {% extends 'admin/master.html' %}
 {% import 'admin/lib.html' as lib with context %}
+{% import 'admin/layout.html' as layout with context %}
 {% import 'admin/static.html' as admin_static with context%}
 {% import 'admin/model/layout.html' as model_layout with context %}
 {% import 'admin/actions.html' as actionlib with context %}
@@ -88,27 +89,7 @@
         }) }}
   {% endif %}
 
-  {# Flash messages using GOV.UK Notification Banner #}
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      {% from 'govuk_frontend_jinja/components/notification-banner/macro.html' import govukNotificationBanner %}
-
-      {% for category, message in messages %}
-        {% if category == 'success' %}
-          {{ govukNotificationBanner({
-            "type": "success",
-            "html": message
-          }) }}
-        {% else %}
-          {# error, warning, or other categories #}
-          {{ govukNotificationBanner({
-            "html": message,
-            "titleText": "Important" if category == 'error' else "Information"
-          }) }}
-        {% endif %}
-      {% endfor %}
-    {% endif %}
-  {% endwith %}
+  {{ layout.messages() }}
   </div>
 </div>
 

@@ -96,19 +96,22 @@
 {%- endmacro %}
 
 {% macro messages() %}
-  {% with messages = get_flashed_messages(with_categories=True) %}
+  {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
-      {% for category, m in messages %}
-        {% if category %}
-          {# alert-error changed to alert-danger in bootstrap 3, mapping is for backwards compatibility #}
-          {% set mapping = {'message': 'info', 'error': 'danger'} %}
-          <div class="alert alert-{{ mapping.get(category, category) }} alert-dismissable">
+      {% from 'govuk_frontend_jinja/components/notification-banner/macro.html' import govukNotificationBanner %}
+
+      {% for category, message in messages %}
+        {% if category == 'success' %}
+          {{ govukNotificationBanner({
+                "type": "success",
+                "html": message
+              }) }}
         {% else %}
-          <div class="alert alert-dismissable">
+          {{ govukNotificationBanner({
+                "html": message,
+                "titleText": "Important" if category == 'error' else "Information"
+              }) }}
         {% endif %}
-      <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-      {{ m }}
-      </div>
       {% endfor %}
     {% endif %}
   {% endwith %}
