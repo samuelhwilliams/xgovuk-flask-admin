@@ -2,6 +2,7 @@ import inspect
 from datetime import datetime
 import typing as t
 
+import markupsafe
 import sqlalchemy
 from flask import Flask, send_from_directory, request
 from flask_admin.contrib.sqla import ModelView
@@ -9,6 +10,7 @@ from flask_admin.contrib.sqla.form import AdminModelConverter
 from flask_admin.contrib.sqla.tools import is_relationship
 from flask_admin.model.form import converts
 from govuk_frontend_wtf.wtforms_widgets import GovTextInput, GovSelect, GovCheckboxInput
+from markupsafe import Markup
 
 from xgovuk_flask_admin.assets import (
     xgovuk_flask_admin_include_css,
@@ -154,10 +156,9 @@ class XGovukAdminModelConverter(AdminModelConverter):
         accepted_values = [choice[0] for choice in available_choices]
 
         if column.nullable:
-            field_args["allow_blank"] = column.nullable
             accepted_values.append(None)
             # Add blank choice at the beginning
-            available_choices.insert(0, ("", ""))
+            available_choices.insert(0, ("", markupsafe.Markup("&nbsp;")))
 
         self._nullable_common(column, field_args)
 

@@ -293,14 +293,18 @@ async = [
 
 [[package]]
 name = "flask-admin"
-version = "2.0.0a3"
-source = { git = "https://github.com/flask-admin/flask-admin?branch=master#d9fffcfad1abdfb6e4e5a64b0f78bfcc5d997053" }
+version = "2.0.0"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "flask" },
     { name = "jinja2" },
     { name = "markupsafe" },
     { name = "werkzeug" },
     { name = "wtforms" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/e4/78/7cf5a70ea875b1eb0aa26caa9954fa1c323dd808bebd5d28769b8715acea/flask_admin-2.0.0.tar.gz", hash = "sha256:c5878ab1ea92c9e8345c0e1a2cd15851f5ecf2e1616d7fb9158487769f188e81", size = 5528485, upload-time = "2025-10-25T08:57:20.083Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/41/d2/e54d4aa3c865e5ccf7d5e2853fcaea27674829ea81706e6d37b15d81f3e1/flask_admin-2.0.0-py3-none-any.whl", hash = "sha256:3b2dc1f13c2ec450e2c9197f58cd684be5b96a9497e1ffb9d9efb9f7f59825f9", size = 6458454, upload-time = "2025-10-25T08:57:17.749Z" },
 ]
 
 [[package]]
@@ -852,7 +856,7 @@ wheels = [
 
 [[package]]
 name = "xgovuk-flask-admin"
-version = "0.1.1"
+version = "0.1.2"
 source = { editable = "." }
 dependencies = [
     { name = "beautifulsoup4" },
@@ -861,6 +865,7 @@ dependencies = [
     { name = "flask-admin" },
     { name = "govuk-frontend-jinja" },
     { name = "govuk-frontend-wtf" },
+    { name = "markupsafe" },
     { name = "sqlalchemy" },
     { name = "tox-uv" },
 ]
@@ -884,9 +889,10 @@ requires-dist = [
     { name = "beautifulsoup4", specifier = ">=4.14.2" },
     { name = "email-validator", specifier = ">=2.0.0" },
     { name = "flask", specifier = ">=3" },
-    { name = "flask-admin", git = "https://github.com/flask-admin/flask-admin?branch=master" },
+    { name = "flask-admin", specifier = ">=2.0.0rc1" },
     { name = "govuk-frontend-jinja", specifier = "==3.9.0" },
     { name = "govuk-frontend-wtf", specifier = "==3.2.0" },
+    { name = "markupsafe", specifier = ">=3.0.2" },
     { name = "sqlalchemy", specifier = ">2" },
     { name = "tox-uv", specifier = ">=1.29.0" },
 ]

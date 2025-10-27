@@ -22,7 +22,7 @@ class User(Base):
     name: Mapped[str]
     age: Mapped[int]
     job: Mapped[str]
-    favourite_colour: Mapped[FavouriteColour]
+    favourite_colour: Mapped[FavouriteColour | None]
     account: Mapped[Optional["Account"]] = relationship(back_populates="user")
     posts: Mapped[list["Post"]] = relationship(
         back_populates="author", cascade="all, delete-orphan"

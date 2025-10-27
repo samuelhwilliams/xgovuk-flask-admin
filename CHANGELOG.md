@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.2
+
+- Fix handling of nullable enums
+
 ## 0.1.1
 
 - Update the layout.messages macro to render GOV.UK Notification banner flash messages; render flashes on all pages
