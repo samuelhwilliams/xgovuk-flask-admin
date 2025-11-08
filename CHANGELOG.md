@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.3
+
+- Add support for postgres' ARRAY/ARRAY[type] (where type maps to an enum in python)
+
 ## 0.1.2
 
 - Fix handling of nullable enums
