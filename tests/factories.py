@@ -8,7 +8,7 @@ import factory
 from factory.faker import Faker as FactoryFaker
 
 from example.enums import FavouriteColour
-from example.models import User, Account, Post
+from example.models import User, Account, Post, Tag
 
 
 class UserFactory(factory.alchemy.SQLAlchemyModelFactory):
@@ -48,6 +48,15 @@ class AccountFactory(factory.alchemy.SQLAlchemyModelFactory):
     id = factory.LazyFunction(lambda: str(uuid.uuid4()))
     user = factory.SubFactory(UserFactory)
     user_id = factory.LazyAttribute(lambda obj: obj.user.id)
+    tags = factory.LazyFunction(
+        lambda: random.sample(list(Tag), k=random.randint(0, 3))
+    )
+    notes = factory.LazyFunction(
+        lambda: [
+            FactoryFaker("sentence").evaluate(None, None, {"locale": None})
+            for _ in range(random.randint(0, 3))
+        ]
+    )
 
 
 class PostFactory(factory.alchemy.SQLAlchemyModelFactory):

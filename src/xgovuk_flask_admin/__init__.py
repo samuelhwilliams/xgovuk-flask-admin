@@ -9,7 +9,11 @@ from flask_admin.contrib.sqla import ModelView
 from flask_admin.contrib.sqla.form import AdminModelConverter
 from flask_admin.contrib.sqla.tools import is_relationship
 from flask_admin.model.form import converts
-from govuk_frontend_wtf.wtforms_widgets import GovTextInput, GovSelect, GovCheckboxInput
+from govuk_frontend_wtf.wtforms_widgets import (
+    GovTextInput,
+    GovSelect,
+    GovTextArea,
+)
 from markupsafe import Markup
 
 from xgovuk_flask_admin.assets import (
@@ -17,6 +21,7 @@ from xgovuk_flask_admin.assets import (
     xgovuk_flask_admin_include_js,
     ROOT_DIR,
 )
+from xgovuk_flask_admin.fields import ArrayTextAreaField
 from xgovuk_flask_admin.filters import (
     XGovukFilterConverter,
 )
@@ -27,8 +32,7 @@ from xgovuk_flask_admin.widgets import (
     GovDateTimeInput,
     XGovCheckboxInput,
 )
-from sqlalchemy.orm import ColumnProperty
-from wtforms import validators, SelectField
+from wtforms import validators, SelectField, SelectMultipleField
 from enum import Enum
 
 
@@ -171,6 +175,49 @@ class XGovukAdminModelConverter(AdminModelConverter):
 
         return SelectField(**field_args)
 
+    @converts("sqlalchemy.dialects.postgresql.array.ARRAY")
+    def convert_array(self, column, field_args, **extra):
+        """Convert PostgreSQL ARRAY columns to appropriate form fields.
+
+        - ARRAY[enum] -> SelectMultipleField with GovSelectWithSearch(multiple=True)
+        - ARRAY[other] -> TextAreaField with newline-separated values
+        """
+        item_type = column.type.item_type
+        item_type_name = item_type.__class__.__name__
+
+        # Check if the array contains enum values
+        if item_type_name == "Enum":
+            # ARRAY[enum] - use multi-select with search
+            available_choices = [(e.name, e.value) for e in item_type.enum_class]
+            accepted_values = [choice[0] for choice in available_choices]
+
+            field_args["choices"] = available_choices
+            field_args["validators"].append(validators.Optional())
+            field_args["validators"].append(
+                validators.AnyOf(
+                    accepted_values,
+                    message=f"Invalid selection. Must be one of: {', '.join(accepted_values)}",
+                )
+            )
+            # Coerce enum names to strings for storage
+            field_args["coerce"] = (
+                lambda v: v.name if isinstance(v, Enum) else str(v) if v else v
+            )
+            field_args["widget"] = GovSelectWithSearch(multiple=True)
+
+            return SelectMultipleField(**field_args)
+        else:
+            # ARRAY[non-enum] - use textarea with newline-separated values
+            # We need to handle the conversion between list and newline-separated string
+
+            # Add custom processing for pre-population and post-submission
+            original_validators = field_args.get("validators", [])
+
+            field_args["validators"] = original_validators
+            field_args["widget"] = GovTextArea()
+
+            return ArrayTextAreaField(**field_args)
+
     def _convert_relation(self, name, prop, property_is_association_proxy, kwargs):
         """Override to add GOV.UK Select widget to relationship fields."""
         # Determine if this is a one-to-many or many-to-many relationship (multiple=True)
@@ -208,6 +255,7 @@ class XGovukModelView(ModelView):
 
     # Format enum values to show their .value (lowercase) instead of .name (uppercase)
     # Format datetime values without microseconds for better readability
+    # Format list/array values as GOV.UK tags
     column_type_formatters = {
         Enum: lambda view, value, name: value.value
         if isinstance(value, Enum)
@@ -215,7 +263,48 @@ class XGovukModelView(ModelView):
         datetime: lambda view, value, name: value.strftime("%Y-%m-%d %H:%M:%S")
         if value
         else "",
+        list: lambda view, value, name: view._format_array_as_tags(value, name)
+        if value
+        else "",
     }
+
+    def _format_array_as_tags(self, value, column_name):
+        """Format array/list values as GOV.UK tags.
+
+        For arrays of enums, uses the enum's .value for display.
+        Allows customization via column_formatters_args to specify tag colours.
+        """
+        if not value:
+            return ""
+
+        # Get custom tag colour configuration from column_formatters_args
+        tag_colours = {}
+        if hasattr(self, "column_formatters_args") and self.column_formatters_args:
+            args = self.column_formatters_args.get(column_name, {})
+            tag_colours = args.get("tag_colours", {})
+
+        tags_html = []
+        for item in value:
+            # Extract display value (handle enum vs regular values)
+            if isinstance(item, Enum):
+                display_value = item.value
+                # Use enum name for colour lookup
+                colour_key = item.name
+            else:
+                display_value = str(item)
+                colour_key = display_value
+
+            # Get tag colour (default to grey)
+            tag_class = tag_colours.get(colour_key, "govuk-tag--grey")
+            if tag_class and not tag_class.startswith("govuk-tag--"):
+                tag_class = f"govuk-tag--{tag_class}"
+
+            # Build tag HTML
+            tags_html.append(
+                f'<strong class="govuk-tag {tag_class}">{markupsafe.escape(display_value)}</strong>'
+            )
+
+        return Markup(" ".join(tags_html))
 
     def __init__(
         self,
@@ -571,7 +660,10 @@ class XGovukModelView(ModelView):
         # For each form field, override the default top-level keys with any provided
         # by the subclass.
         for field_name, field_args in form_args.items():
-            form_args[field_name] = {**field_args, **original_form_args.get(field_name, {})}
+            form_args[field_name] = {
+                **field_args,
+                **original_form_args.get(field_name, {}),
+            }
 
         # Preserve form_args for relationship fields (not processed by _iterate_model_fields)
         for field_name, field_args in original_form_args.items():
@@ -599,6 +691,27 @@ class XGovukModelView(ModelView):
             column_type_name = type(column.type).__name__
             uses_fieldset = column_type_name in ("Date", "DateTime")
 
+            # Handle ARRAY columns
+            if column_type_name == "ARRAY":
+                # Check if it's ARRAY[enum] or ARRAY[other]
+                item_type = column.type.item_type
+                item_type_name = item_type.__class__.__name__
+
+                if item_type_name == "Enum":
+                    # ARRAY[enum] - add data-remove-duplicates attribute
+                    if "data-remove-duplicates" not in widget_args:
+                        widget_args["data-remove-duplicates"] = "true"
+                else:
+                    # ARRAY[non-enum] - add hint text
+                    if "hint" not in widget_args:
+                        widget_args["hint"] = {"text": "Enter one item per line"}
+
+                # ARRAY fields also need label styling (they don't use fieldsets)
+                if "label" not in widget_args:
+                    widget_args["label"] = {}
+                if "classes" not in widget_args["label"]:
+                    widget_args["label"]["classes"] = "govuk-label--s"
+
             if uses_fieldset:
                 # For Date/DateTime fields: add bold to fieldset legend
                 if "fieldset" not in widget_args:
@@ -624,6 +737,8 @@ class XGovukModelView(ModelView):
                     widget_args["label"]["classes"] = "govuk-label--s"
 
             form_widget_args[column_name] = widget_args
+
+        print(form_widget_args)
 
         # Also process relationship fields to add govuk-label--s class
         for relation in sqlalchemy.inspect(self.model).relationships:

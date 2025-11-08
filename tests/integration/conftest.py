@@ -34,7 +34,7 @@ def get_app_components():
                 "TESTING": True,
                 "SQLALCHEMY_ENGINES": {
                     "default": {
-                        "url": postgres.get_connection_url().replace('+psycopg2', ''),
+                        "url": postgres.get_connection_url().replace("+psycopg2", ""),
                         "echo": True,
                     }
                 },

@@ -31,7 +31,7 @@ class TestCustomEndpoint:
         app.config["SECRET_KEY"] = "test-secret"
         app.config["TESTING"] = True
         app.config["SQLALCHEMY_ENGINES"] = {
-            "default": postgres_container.get_connection_url().replace('+psycopg2', '')
+            "default": postgres_container.get_connection_url().replace("+psycopg2", "")
         }
 
         # Configure Jinja2 loaders
@@ -82,7 +82,7 @@ class TestCustomEndpoint:
                 job="Test Job",
                 favourite_colour=list(FavouriteColour)[0],
                 created_at=datetime.date.today(),
-                active=True
+                active=True,
             )
             db.session.add(user)
             db.session.commit()
@@ -117,7 +117,7 @@ class TestCustomEndpoint:
                 job="Job Title",
                 favourite_colour=list(FavouriteColour)[0],
                 created_at=datetime.date.today(),
-                active=True
+                active=True,
             )
             db.session.add(user)
             db.session.commit()

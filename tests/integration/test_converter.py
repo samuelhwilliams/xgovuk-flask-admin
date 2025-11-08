@@ -2,7 +2,8 @@
 
 import pytest
 from govuk_frontend_wtf.wtforms_widgets import GovTextInput, GovSelect
-from xgovuk_flask_admin.widgets import GovDateInput
+from xgovuk_flask_admin.widgets import GovDateInput, GovSelectWithSearch
+from wtforms import SelectMultipleField, TextAreaField
 
 
 @pytest.mark.integration
@@ -112,3 +113,51 @@ class TestXGovukAdminModelConverter:
             type(v).__name__ for v in user_model_view.form_args["email"]["validators"]
         ]
         assert "Email" in validator_types
+
+    def test_handles_array_enum_fields(self, db_session, account_model_view):
+        """Test ARRAY[enum] columns are converted to SelectMultipleField with GovSelectWithSearch."""
+        form = account_model_view.create_form()
+
+        # tags is an ARRAY[Tag] field
+        assert isinstance(form.tags, SelectMultipleField)
+        assert isinstance(form.tags.widget, GovSelectWithSearch)
+        assert form.tags.widget.multiple is True
+
+        # Check that choices are available (enum values)
+        choices = form.tags.choices
+        assert len(choices) > 0
+
+        # Choices should be tuples of (name, value) - e.g., ('RED', 'red')
+        choice_names = [choice[0] for choice in choices if choice[0]]
+        choice_labels = [choice[1] for choice in choices if choice[1]]
+
+        # Verify enum names and values are in choices
+        assert "RED" in choice_names
+        assert "YELLOW" in choice_names
+        assert "BLUE" in choice_names
+        assert "red" in choice_labels
+        assert "yellow" in choice_labels
+        assert "blue" in choice_labels
+
+        # Verify data-remove-duplicates attribute is set in form_widget_args
+        assert "tags" in account_model_view.form_widget_args
+        assert "data-remove-duplicates" in account_model_view.form_widget_args["tags"]
+        assert (
+            account_model_view.form_widget_args["tags"]["data-remove-duplicates"]
+            == "true"
+        )
+
+    def test_handles_array_non_enum_fields(self, db_session, account_model_view):
+        """Test ARRAY[non-enum] columns are converted to TextAreaField."""
+        form = account_model_view.create_form()
+
+        # notes is an ARRAY[TEXT] field
+        assert isinstance(form.notes, TextAreaField)
+
+        # Verify hint text is set in form_widget_args
+        assert "notes" in account_model_view.form_widget_args
+        assert "hint" in account_model_view.form_widget_args["notes"]
+        assert (
+            account_model_view.form_widget_args["notes"]["hint"]["text"]
+            == "Enter one item per line"
+        )

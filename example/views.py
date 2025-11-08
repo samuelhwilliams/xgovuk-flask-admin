@@ -24,6 +24,7 @@ class UserModelView(XGovukModelView):
         "last_logged_in_at",
         "active",
     ]
+    column_default_sort = "id"
 
     column_searchable_list = ["email", "name"]
 
@@ -45,6 +46,7 @@ class PostModelView(XGovukModelView):
     can_view_details = True
 
     column_filters = ["author", "published_at", "created_at"]
+    column_default_sort = "id"
 
     column_searchable_list = ["title", "content"]
 
@@ -60,7 +62,22 @@ class PostModelView(XGovukModelView):
 
 
 class AccountModelView(XGovukModelView):
-    column_list = ["id", "user.email"]
+    column_list = ["id", "user.email", "tags", "notes"]
+    column_default_sort = "id"
+
+    # Customize tag colours for the tags field
+    column_formatters_args = {
+        "tags": {
+            "tag_colours": {
+                "RED": "red",
+                "YELLOW": "yellow",
+                "BLUE": "blue",
+            }
+        }
+    }
+    form_args = {
+        "user": {"get_label": "email"},
+    }
 
 
 class CustomView(BaseView):

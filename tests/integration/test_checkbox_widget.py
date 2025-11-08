@@ -2,7 +2,6 @@
 
 import pytest
 from bs4 import BeautifulSoup
-from xgovuk_flask_admin.widgets import XGovCheckboxInput
 
 
 @pytest.mark.integration
@@ -37,7 +36,9 @@ class TestXGovCheckboxInputHTML:
 
         # Should not have a hint element when description is None
         hint = form_group.find(class_="govuk-hint")
-        assert hint is None, "Checkbox should not have a hint element when description is None"
+        assert hint is None, (
+            "Checkbox should not have a hint element when description is None"
+        )
 
     def test_checkbox_widget_has_govuk_styling(self, client, user_model_view):
         """Test that checkbox widget has proper GOV.UK Design System classes."""
@@ -86,12 +87,18 @@ class TestXGovCheckboxInputHTML:
 
         # Verify the checkbox has an id attribute
         checkbox_id = active_checkbox.get("id")
-        assert checkbox_id == "active", f"Checkbox should have id='active', got: {checkbox_id}"
+        assert checkbox_id == "active", (
+            f"Checkbox should have id='active', got: {checkbox_id}"
+        )
 
         # Verify the label is correctly associated with the checkbox
         label = soup.find("label", {"for": "active"})
-        assert label is not None, "Label should be associated with checkbox via 'for' attribute"
+        assert label is not None, (
+            "Label should be associated with checkbox via 'for' attribute"
+        )
 
         # Verify the label text
         label_text = label.get_text(strip=True)
-        assert "Active" in label_text, f"Label should contain 'Active', got: {label_text}"
+        assert "Active" in label_text, (
+            f"Label should contain 'Active', got: {label_text}"
+        )

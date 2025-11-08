@@ -24,6 +24,7 @@ from jinja2 import PackageLoader, ChoiceLoader, PrefixLoader, FileSystemLoader
 # Global container instance
 _postgres_container = None
 
+
 class ProxySession:
     """
     We provide a live proxy to db.session here, so that any access is scoped to the `app_context` of the moment.
@@ -49,6 +50,7 @@ class ProxySession:
 
     def __getattr__(self, name):  # type: ignore[no-untyped-def]
         return getattr(self.db.session, name)
+
 
 def get_postgres_container():
     """Get or create a PostgreSQL testcontainer."""
@@ -83,12 +85,16 @@ def _create_app(config_overrides=None, seed: bool = True):
 
     # Use PostgreSQL testcontainer if USE_POSTGRES env var is set
     # Otherwise default to SQLite for backward compatibility with tests
-    use_postgres = os.environ.get("USE_POSTGRES", "true").lower() in ("true", "1", "yes")
+    use_postgres = os.environ.get("USE_POSTGRES", "true").lower() in (
+        "true",
+        "1",
+        "yes",
+    )
 
     if use_postgres:
         postgres = get_postgres_container()
         app.config["SQLALCHEMY_ENGINES"] = {
-            "default": postgres.get_connection_url().replace('+psycopg2', '')
+            "default": postgres.get_connection_url().replace("+psycopg2", "")
         }
     else:
         app.config["SQLALCHEMY_ENGINES"] = {"default": "sqlite:///default.sqlite"}

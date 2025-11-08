@@ -242,11 +242,10 @@ class TestSelectWithSearchIntegration:
 
     def test_get_label_with_string_attribute(self):
         """Test that get_label can use a string attribute to display relationship options."""
+
         # Create a custom view with get_label for the books relationship
         class CustomAuthorView(XGovukModelView):
-            form_args = {
-                "books": {"get_label": "title"}
-            }
+            form_args = {"books": {"get_label": "title"}}
 
         # Create a fresh app with custom view
         app = Flask(__name__)
@@ -301,6 +300,7 @@ class TestSelectWithSearchIntegration:
 
     def test_get_label_with_callable(self):
         """Test that get_label can use a callable to format relationship options."""
+
         # Create a custom view with get_label as a callable
         class CustomAuthorView(XGovukModelView):
             form_args = {
@@ -359,11 +359,10 @@ class TestSelectWithSearchIntegration:
 
     def test_form_args_preserved_for_relationships(self):
         """Test that form_args for relationship fields are not lost during form scaffold."""
+
         # Create a custom view with form_args for a relationship
         class CustomAuthorView(XGovukModelView):
-            form_args = {
-                "books": {"get_label": "title", "allow_blank": True}
-            }
+            form_args = {"books": {"get_label": "title", "allow_blank": True}}
 
         # Create a fresh app with custom view
         app = Flask(__name__)
@@ -395,7 +394,7 @@ class TestSelectWithSearchIntegration:
             admin.add_view(view)
 
             # Trigger form scaffold (which calls _populate_implicit_form_args)
-            form_class = view.scaffold_form()
+            view.scaffold_form()
 
             # Verify that form_args for 'books' relationship are preserved
             assert "books" in view.form_args
