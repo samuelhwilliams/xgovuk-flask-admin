@@ -1,5 +1,7 @@
 """E2E tests for bulk action UI interactions."""
 
+import re
+
 import pytest
 from playwright.sync_api import expect
 
@@ -62,7 +64,11 @@ class TestBulkActionUI:
         """Test full bulk action workflow with confirmation."""
         page.goto(f"{page.base_url}/admin/account/")
 
-        expect(page.locator("p", has_text="Showing 8 results")).to_be_visible()
+        results_count = page.locator(
+            "p", has_text=re.compile(r"Showing\s+\d+\s+results")
+        )
+        expect(results_count).to_be_visible()
+        num_results = int(re.split("\s+", results_count.text_content().strip())[1])
 
         checkboxes = page.locator(".action-checkbox")
         checkboxes.first.check()
@@ -84,7 +90,9 @@ class TestBulkActionUI:
         success_banner = page.locator(".govuk-notification-banner--success")
         assert success_banner.is_visible(), "Expected success notification banner"
 
-        expect(page.locator("p", has_text="Showing 6 results")).to_be_visible()
+        expect(
+            page.locator("p", has_text=f"Showing {num_results - 2} results")
+        ).to_be_visible()
 
     def test_bulk_action_validation(self, page):
         """Test bulk action requires selection and action choice."""

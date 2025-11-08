@@ -1,5 +1,7 @@
 """Playwright fixtures for e2e tests."""
 
+import os
+
 import pytest
 from playwright.sync_api import sync_playwright
 import subprocess
@@ -30,13 +32,19 @@ def flask_server():
 import sys
 sys.path.insert(0, '{sys.path[0]}')
 from example.app import _create_app
+from testcontainers.postgres import PostgresContainer
+
+# Start PostgreSQL container
+postgres = PostgresContainer("postgres:16-alpine")
+postgres.start()
 
 app, db, admin = _create_app(config_overrides={{
     'TESTING': True,
-    'SQLALCHEMY_ENGINES': {{'default': 'sqlite:///:memory:'}},
+    'SQLALCHEMY_ENGINES': {{'default': postgres.get_connection_url().replace('+psycopg2', '')}},
 }})
 app.run(host='127.0.0.1', port={port}, debug=False, use_reloader=False)
 """
+    is_ci = os.environ.get("CI") == "true" or os.environ.get("GITHUB_ACTIONS") == "true"
 
     # Start server in subprocess
     # Use DEVNULL to prevent PIPE buffer deadlock after many requests
@@ -48,7 +56,7 @@ app.run(host='127.0.0.1', port={port}, debug=False, use_reloader=False)
 
     # Wait for server to be ready
     base_url = f"http://127.0.0.1:{port}"
-    for _ in range(50):  # Try for 5 seconds
+    for _ in range(600 if is_ci else 50):  # Try for 5 seconds
         try:
             requests.get(f"{base_url}/admin/", timeout=1)
             break

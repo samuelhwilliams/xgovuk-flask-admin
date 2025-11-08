@@ -5,6 +5,7 @@ from flask import Flask
 from flask_admin import Admin
 from flask_sqlalchemy_lite import SQLAlchemy
 from jinja2 import PackageLoader, ChoiceLoader, PrefixLoader
+from testcontainers.postgres import PostgresContainer
 
 from xgovuk_flask_admin.theme import XGovukFrontendTheme
 from xgovuk_flask_admin import XGovukModelView, XGovukFlaskAdmin
@@ -15,13 +16,23 @@ from example.models import Base, User
 class TestCustomEndpoint:
     """Test that custom Flask-Admin endpoint names work correctly."""
 
+    @pytest.fixture(scope="class")
+    def postgres_container(self):
+        """Create PostgreSQL container for this test class."""
+        container = PostgresContainer("postgres:16-alpine")
+        container.start()
+        yield container
+        container.stop()
+
     @pytest.fixture
-    def app_with_custom_endpoint(self):
+    def app_with_custom_endpoint(self, postgres_container):
         """Create app with a custom Flask-Admin endpoint name."""
         app = Flask(__name__)
         app.config["SECRET_KEY"] = "test-secret"
         app.config["TESTING"] = True
-        app.config["SQLALCHEMY_ENGINES"] = {"default": "sqlite:///:memory:"}
+        app.config["SQLALCHEMY_ENGINES"] = {
+            "default": postgres_container.get_connection_url().replace("+psycopg2", "")
+        }
 
         # Configure Jinja2 loaders
         app.jinja_options = {
@@ -71,7 +82,7 @@ class TestCustomEndpoint:
                 job="Test Job",
                 favourite_colour=list(FavouriteColour)[0],
                 created_at=datetime.date.today(),
-                active=True
+                active=True,
             )
             db.session.add(user)
             db.session.commit()
@@ -106,7 +117,7 @@ class TestCustomEndpoint:
                 job="Job Title",
                 favourite_colour=list(FavouriteColour)[0],
                 created_at=datetime.date.today(),
-                active=True
+                active=True,
             )
             db.session.add(user)
             db.session.commit()

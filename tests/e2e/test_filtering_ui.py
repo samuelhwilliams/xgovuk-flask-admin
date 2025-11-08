@@ -295,7 +295,9 @@ class TestFilterInteractions:
                 visible_selects.append(all_selects.nth(i))
 
         # Should have at least some visible selects after expanding Active
-        assert len(visible_selects) > 0, "Expected visible select dropdowns after expanding Active filter"
+        assert len(visible_selects) > 0, (
+            "Expected visible select dropdowns after expanding Active filter"
+        )
 
     def test_filter_button_shows_active_count(self, page):
         """Test filter toggle button shows active filter count."""

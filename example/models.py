@@ -1,8 +1,11 @@
 import datetime
 import uuid
+from enum import StrEnum
 from typing import Optional
 
 from sqlalchemy import ForeignKey
+from sqlalchemy.dialects import postgresql
+from sqlalchemy import Enum as SqlEnum
 from sqlalchemy.orm import DeclarativeBase, Mapped, relationship
 from sqlalchemy.testing.schema import mapped_column
 
@@ -32,12 +35,26 @@ class User(Base):
     active: Mapped[bool]
 
 
+class Tag(StrEnum):
+    RED = "red"
+    YELLOW = "yellow"
+    BLUE = "blue"
+
+
 class Account(Base):
     __tablename__ = "account"
 
     id: Mapped[str] = mapped_column(primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id: Mapped[int] = mapped_column(ForeignKey(User.id))
     user: Mapped[User] = relationship(back_populates="account")
+    tags: Mapped[list[Tag]] = mapped_column(
+        postgresql.ARRAY(SqlEnum(Tag, name="tag_enum", validate_strings=True)),
+        nullable=False,
+        default=list,
+    )
+    notes: Mapped[list[str]] = mapped_column(
+        postgresql.ARRAY(postgresql.TEXT), nullable=False, default=list
+    )
 
 
 class Post(Base):
