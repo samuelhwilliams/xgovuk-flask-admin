@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.4
+
+- Add filters for array columns
+
 ## 0.1.3
 
 - Add support for postgres' ARRAY/ARRAY[type] (where type maps to an enum in python)
