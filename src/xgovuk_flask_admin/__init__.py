@@ -366,7 +366,12 @@ class XGovukModelView(ModelView):
             if len(values) == 1:
                 modified[key] = values[0]
             else:
-                modified[key] = values
+                # For filter parameters with multiple values (e.g., multi-select),
+                # join them with commas so the filter's clean() method can parse them
+                if key.startswith("flt"):
+                    modified[key] = ",".join(values)
+                else:
+                    modified[key] = values
 
         # Find and combine GOV.UK date and datetime fields
         # Look for fields ending with -day that start with 'flt'
@@ -737,8 +742,6 @@ class XGovukModelView(ModelView):
                     widget_args["label"]["classes"] = "govuk-label--s"
 
             form_widget_args[column_name] = widget_args
-
-        print(form_widget_args)
 
         # Also process relationship fields to add govuk-label--s class
         for relation in sqlalchemy.inspect(self.model).relationships:

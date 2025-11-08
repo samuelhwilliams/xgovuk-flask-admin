@@ -64,6 +64,7 @@ class PostModelView(XGovukModelView):
 class AccountModelView(XGovukModelView):
     column_list = ["id", "user.email", "tags", "notes"]
     column_default_sort = "id"
+    column_filters = ["tags", "notes"]
 
     # Customize tag colours for the tags field
     column_formatters_args = {
