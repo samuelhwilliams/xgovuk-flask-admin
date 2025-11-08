@@ -38,8 +38,13 @@ window.GOVUK.Modules = window.GOVUK.Modules || {};
                 : "Select one";
         }
 
-        const ariaDescribedBy = this.module.getAttribute("aria-describedby") || "";
+        const ariaDescribedBy =
+            this.module.getAttribute("aria-describedby") || "";
         const labelId = this.module.id + "-label " + ariaDescribedBy;
+
+        // Check if duplicate prevention is requested
+        const removeDuplicates =
+            this.module.getAttribute("data-remove-duplicates") === "true";
 
         this.choices = new Choices(this.module, {
             allowHTML: false,
@@ -48,6 +53,7 @@ window.GOVUK.Modules = window.GOVUK.Modules || {};
             itemSelectText: "",
             searchResultLimit: 100,
             removeItemButton: this.module.multiple,
+            duplicateItemsAllowed: !removeDuplicates, // Prevent duplicates if requested
             labelId: labelId,
             callbackOnInit: function () {
                 // For the multiple select, move the input field to

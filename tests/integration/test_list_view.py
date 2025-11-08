@@ -117,7 +117,7 @@ class TestListViewCanEdit:
         app.config["SECRET_KEY"] = "test-secret"
         app.config["TESTING"] = True
         app.config["SQLALCHEMY_ENGINES"] = {
-            "default": postgres_container.get_connection_url().replace('+psycopg2', '')
+            "default": postgres_container.get_connection_url().replace("+psycopg2", "")
         }
 
         # Configure Jinja2 loaders
@@ -202,7 +202,7 @@ class TestListViewCanEdit:
         app.config["SECRET_KEY"] = "test-secret"
         app.config["TESTING"] = True
         app.config["SQLALCHEMY_ENGINES"] = {
-            "default": postgres_container.get_connection_url().replace('+psycopg2', '')
+            "default": postgres_container.get_connection_url().replace("+psycopg2", "")
         }
 
         # Configure Jinja2 loaders

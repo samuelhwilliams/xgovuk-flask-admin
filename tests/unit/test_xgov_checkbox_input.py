@@ -67,7 +67,7 @@ class TestXGovCheckboxInput:
             params = widget.map_gov_params(field, items=[])
 
         # Should not have a 'hint' key when description is None
-        assert 'hint' not in params
+        assert "hint" not in params
 
     def test_map_gov_params_preserves_valid_hint(self, test_app):
         """Test that map_gov_params preserves hint when text is provided."""
@@ -83,5 +83,5 @@ class TestXGovCheckboxInput:
             params = widget.map_gov_params(field, items=[])
 
         # Should have hint with valid text
-        assert 'hint' in params
-        assert params['hint']['text'] == "Valid hint text"
+        assert "hint" in params
+        assert params["hint"]["text"] == "Valid hint text"

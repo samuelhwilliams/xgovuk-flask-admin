@@ -62,7 +62,7 @@ class TestSelectWithSearchEnhancement:
 
         # Click on the posts field's Choices wrapper to open the dropdown
         # Be specific to target the posts field (multi-select)
-        posts_field = page.locator('label:has-text("Posts")').locator('..')
+        posts_field = page.locator('label:has-text("Posts")').locator("..")
         choices_wrapper = posts_field.locator(".choices")
         choices_wrapper.click()
 
@@ -85,7 +85,7 @@ class TestSelectWithSearchEnhancement:
         page.wait_for_selector(".choices")
 
         # Click to open posts dropdown specifically
-        posts_field = page.locator('label:has-text("Posts")').locator('..')
+        posts_field = page.locator('label:has-text("Posts")').locator("..")
         choices_wrapper = posts_field.locator(".choices")
         choices_wrapper.click()
         posts_field.locator(".choices__list--dropdown").wait_for(state="visible")
@@ -94,7 +94,11 @@ class TestSelectWithSearchEnhancement:
         initial_count = page.locator(".choices__list--dropdown .choices__item").count()
 
         # Type in search box to filter - target the posts field's search input
-        search_input = page.locator('label:has-text("Posts")').locator('..').locator('.choices input[type="search"]')
+        search_input = (
+            page.locator('label:has-text("Posts")')
+            .locator("..")
+            .locator('.choices input[type="search"]')
+        )
         search_input.fill("xyz_nonexistent_search_term")
 
         # Check that "No results found" message appears or options are filtered
@@ -118,8 +122,10 @@ class TestSelectWithSearchEnhancement:
         page.wait_for_selector(".choices")
 
         # Get initial count of selected items (posts field specifically)
-        posts_field = page.locator('label:has-text("Posts")').locator('..')
-        initial_selected = posts_field.locator(".choices__list--multiple .choices__item").count()
+        posts_field = page.locator('label:has-text("Posts")').locator("..")
+        initial_selected = posts_field.locator(
+            ".choices__list--multiple .choices__item"
+        ).count()
 
         # Click to open posts dropdown
         choices_wrapper = posts_field.locator(".choices")
@@ -135,7 +141,9 @@ class TestSelectWithSearchEnhancement:
             first_option.click()
 
             # Check that a new selected item appears in the posts field
-            selected_items = posts_field.locator(".choices__list--multiple .choices__item")
+            selected_items = posts_field.locator(
+                ".choices__list--multiple .choices__item"
+            )
             new_count = selected_items.count()
             assert new_count == initial_selected + 1, (
                 f"Should have {initial_selected + 1} selected items, found {new_count}"
@@ -161,7 +169,7 @@ class TestSelectWithSearchEnhancement:
         page.wait_for_selector(".choices")
 
         # Select an item first - target posts field specifically
-        posts_field = page.locator('label:has-text("Posts")').locator('..')
+        posts_field = page.locator('label:has-text("Posts")').locator("..")
         choices_wrapper = posts_field.locator(".choices")
         choices_wrapper.click()
         posts_field.locator(".choices__list--dropdown").wait_for(state="visible")
@@ -173,7 +181,9 @@ class TestSelectWithSearchEnhancement:
             first_option.click()
 
             # Now try to remove it from the posts field
-            selected_items = posts_field.locator(".choices__list--multiple .choices__item")
+            selected_items = posts_field.locator(
+                ".choices__list--multiple .choices__item"
+            )
             initial_count = selected_items.count()
 
             # Click the remove button (X)
@@ -246,13 +256,15 @@ class TestSelectWithSearchEnhancement:
         page.wait_for_selector(".choices")
 
         # Click to open posts dropdown
-        posts_field = page.locator('label:has-text("Posts")').locator('..')
+        posts_field = page.locator('label:has-text("Posts")').locator("..")
         choices_wrapper = posts_field.locator(".choices")
         choices_wrapper.click()
         posts_field.locator(".choices__list--dropdown").wait_for(state="visible")
 
         # Count all available options in posts dropdown
-        dropdown_items = posts_field.locator(".choices__list--dropdown .choices__item--choice")
+        dropdown_items = posts_field.locator(
+            ".choices__list--dropdown .choices__item--choice"
+        )
         dropdown_count = dropdown_items.count()
 
         # Should have approximately 20 posts total (each user has 2-5 posts, 8 users)
@@ -273,7 +285,7 @@ class TestSelectWithSearchEnhancement:
         page.wait_for_selector(".choices")
 
         # Count initial selected posts (posts field specifically)
-        posts_field = page.locator('label:has-text("Posts")').locator('..')
+        posts_field = page.locator('label:has-text("Posts")').locator("..")
         initial_selected = posts_field.locator(
             ".choices__list--multiple .choices__item"
         ).count()
@@ -317,7 +329,7 @@ class TestSelectWithSearchEnhancement:
         page.wait_for_selector(".choices")
 
         # Verify the added post is still selected (posts field specifically)
-        posts_field = page.locator('label:has-text("Posts")').locator('..')
+        posts_field = page.locator('label:has-text("Posts")').locator("..")
         final_selected = posts_field.locator(".choices__list--multiple .choices__item")
         final_count = final_selected.count()
         assert final_count == initial_selected + 1, (
@@ -430,7 +442,7 @@ class TestSelectWithSearchEnhancement:
             )
 
         # Click to open Choices.js dropdown (posts field specifically)
-        posts_field = page.locator('label:has-text("Posts")').locator('..')
+        posts_field = page.locator('label:has-text("Posts")').locator("..")
         choices_wrapper = posts_field.locator(".choices")
         choices_wrapper.click()
         posts_field.locator(".choices__list--dropdown").wait_for(state="visible")
