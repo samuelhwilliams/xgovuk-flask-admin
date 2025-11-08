@@ -80,6 +80,90 @@ class TimeBeforeFilter(sqla_filters.TimeSmallerFilter):
         return "before"
 
 
+class ArrayNotContainsFilter(sqla_filters.BaseSQLAFilter):
+    def __init__(self, column, name, options=None, **kwargs):
+        super().__init__(column, name, options, **kwargs)
+        self.enum_class = (
+            getattr(column.type.item_type, "enum_class", None)
+            if hasattr(column.type, "item_type")
+            else None
+        )
+
+    def clean(self, value):
+        if self.enum_class:
+            return self.enum_class[value]
+        return value
+
+    def apply(self, query, value, alias=None):
+        column = self.get_column(alias)
+        return query.filter(~column.contains([value]))
+
+    def operation(self):
+        return "not contains"
+
+
+class ArrayOverlapFilter(sqla_filters.BaseSQLAFilter):
+    def __init__(self, column, name, options=None, **kwargs):
+        super().__init__(column, name, options, **kwargs)
+        self.enum_class = (
+            getattr(column.type.item_type, "enum_class", None)
+            if hasattr(column.type, "item_type")
+            else None
+        )
+
+    def clean(self, value):
+        if isinstance(value, str):
+            values = [v.strip() for v in value.split(",") if v.strip()]
+        elif isinstance(value, list):
+            values = value
+        else:
+            values = [value]
+
+        if self.enum_class:
+            return [self.enum_class[v] for v in values]
+        return values
+
+    def apply(self, query, value, alias=None):
+        column = self.get_column(alias)
+        if isinstance(value, list):
+            return query.filter(column.overlap(value))
+        return query.filter(column.overlap([value]))
+
+    def operation(self):
+        return "has any of"
+
+
+class ArrayEqualFilter(sqla_filters.BaseSQLAFilter):
+    def __init__(self, column, name, options=None, **kwargs):
+        super().__init__(column, name, options, **kwargs)
+        self.enum_class = (
+            getattr(column.type.item_type, "enum_class", None)
+            if hasattr(column.type, "item_type")
+            else None
+        )
+
+    def clean(self, value):
+        if isinstance(value, str):
+            values = [v.strip() for v in value.split(",") if v.strip()]
+        elif isinstance(value, list):
+            values = value
+        else:
+            values = [value]
+
+        if self.enum_class:
+            return [self.enum_class[v] for v in values]
+        return values
+
+    def apply(self, query, value, alias=None):
+        column = self.get_column(alias)
+        if isinstance(value, list):
+            return query.filter(column == value)
+        return query.filter(column == [value])
+
+    def operation(self):
+        return "equals"
+
+
 class XGovukFilterConverter(sqla_filters.FilterConverter):
     """
     Custom filter converter for GOV.UK Flask Admin.
@@ -164,6 +248,13 @@ class XGovukFilterConverter(sqla_filters.FilterConverter):
         TimeBeforeFilter,  # Custom: "before" instead of "smaller than"
         sqla_filters.FilterEmpty,
         # Removed: TimeBetweenFilter, TimeNotBetweenFilter
+    )
+
+    array_filters = (
+        ArrayOverlapFilter,
+        ArrayNotContainsFilter,
+        ArrayEqualFilter,
+        sqla_filters.FilterEmpty,
     )
 
     def _get_filter_list(self, column, filter_classes):
@@ -270,3 +361,14 @@ class XGovukFilterConverter(sqla_filters.FilterConverter):
     def conv_uuid(self, column, name, **kwargs):
         filter_classes = self._get_filter_list(column, self.uuid_filters)
         return [f(column, name, **kwargs) for f in filter_classes]
+
+    @sqla_filters.filters.convert("array")
+    def conv_array(self, column, name, options=None, **kwargs):
+        item_type = column.type.item_type
+
+        if not options and hasattr(item_type, "enum_class"):
+            enum_class = item_type.enum_class
+            options = [(e.name, e.value) for e in enum_class]
+
+        filter_classes = self._get_filter_list(column, self.array_filters)
+        return [f(column, name, options, **kwargs) for f in filter_classes]

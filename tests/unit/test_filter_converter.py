@@ -1,8 +1,18 @@
 """Unit tests for XGovukFilterConverter."""
 
+import enum
 import pytest
 from flask_admin.contrib.sqla import filters as sqla_filters
-from sqlalchemy import Column, Integer, String, DateTime, Boolean
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    DateTime,
+    Boolean,
+    Enum as SQLAEnum,
+    Text,
+)
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import declarative_base
 
 from xgovuk_flask_admin.filters import (
@@ -12,6 +22,9 @@ from xgovuk_flask_admin.filters import (
     DateTimeEqualFilter,
     DateTimeAfterFilter,
     DateTimeBeforeFilter,
+    ArrayNotContainsFilter,
+    ArrayOverlapFilter,
+    ArrayEqualFilter,
 )
 
 Base = declarative_base()
@@ -303,3 +316,156 @@ class TestXGovukFilterConverter:
 
         # Should NOT have empty filter for non-nullable UUID
         assert sqla_filters.FilterEmpty not in filter_types
+
+    def test_array_enum_filters(self, converter):
+        """Test that ARRAY[enum] columns get correct array filters with enum options."""
+
+        class Tag(enum.Enum):
+            RED = "red"
+            YELLOW = "yellow"
+            BLUE = "blue"
+
+        column = Column("tags", ARRAY(SQLAEnum(Tag)), nullable=False)
+
+        filters = converter.conv_array(column, "Tags")
+
+        filter_types = [type(f) for f in filters]
+
+        assert ArrayOverlapFilter in filter_types
+        assert ArrayNotContainsFilter in filter_types
+        assert ArrayEqualFilter in filter_types
+
+        assert sqla_filters.FilterEmpty not in filter_types
+
+        overlap_filter = next(f for f in filters if isinstance(f, ArrayOverlapFilter))
+        assert overlap_filter.options == [
+            ("RED", "red"),
+            ("YELLOW", "yellow"),
+            ("BLUE", "blue"),
+        ]
+
+    def test_array_text_filters(self, converter):
+        """Test that ARRAY[text] columns get correct array filters without options."""
+        column = Column("notes", ARRAY(Text), nullable=False)
+
+        filters = converter.conv_array(column, "Notes")
+
+        filter_types = [type(f) for f in filters]
+
+        assert ArrayOverlapFilter in filter_types
+        assert ArrayNotContainsFilter in filter_types
+        assert ArrayEqualFilter in filter_types
+
+        assert sqla_filters.FilterEmpty not in filter_types
+
+        overlap_filter = next(f for f in filters if isinstance(f, ArrayOverlapFilter))
+        assert overlap_filter.options is None
+
+    def test_array_nullable_includes_empty(self, converter):
+        """Test that nullable array columns get FilterEmpty."""
+
+        class Tag(enum.Enum):
+            RED = "red"
+            YELLOW = "yellow"
+
+        column = Column("tags", ARRAY(SQLAEnum(Tag)), nullable=True)
+
+        filters = converter.conv_array(column, "Tags")
+
+        filter_types = [type(f) for f in filters]
+
+        assert sqla_filters.FilterEmpty in filter_types
+
+    def test_array_filter_operations(self, converter):
+        """Test that array filters have correct operation labels."""
+
+        class Tag(enum.Enum):
+            RED = "red"
+
+        column = Column("tags", ARRAY(SQLAEnum(Tag)), nullable=False)
+
+        filters = converter.conv_array(column, "Tags")
+
+        overlap_filter = next(f for f in filters if isinstance(f, ArrayOverlapFilter))
+        not_contains_filter = next(
+            f for f in filters if isinstance(f, ArrayNotContainsFilter)
+        )
+        equal_filter = next(f for f in filters if isinstance(f, ArrayEqualFilter))
+
+        assert overlap_filter.operation() == "has any of"
+        assert not_contains_filter.operation() == "not contains"
+        assert equal_filter.operation() == "equals"
+
+    def test_array_overlap_filter_clean_comma_separated(self, converter):
+        """Test ArrayOverlapFilter.clean() handles comma-separated strings."""
+
+        class Tag(enum.Enum):
+            RED = "red"
+            BLUE = "blue"
+            YELLOW = "yellow"
+
+        column = Column("tags", ARRAY(SQLAEnum(Tag)), nullable=False)
+        filters = converter.conv_array(column, "Tags")
+        overlap_filter = next(f for f in filters if isinstance(f, ArrayOverlapFilter))
+
+        result = overlap_filter.clean("RED,BLUE")
+        assert isinstance(result, list)
+        assert len(result) == 2
+        assert Tag.RED in result
+        assert Tag.BLUE in result
+
+    def test_array_overlap_filter_clean_single_value(self, converter):
+        """Test ArrayOverlapFilter.clean() handles single values."""
+
+        class Tag(enum.Enum):
+            RED = "red"
+
+        column = Column("tags", ARRAY(SQLAEnum(Tag)), nullable=False)
+        filters = converter.conv_array(column, "Tags")
+        overlap_filter = next(f for f in filters if isinstance(f, ArrayOverlapFilter))
+
+        result = overlap_filter.clean("RED")
+        assert isinstance(result, list)
+        assert len(result) == 1
+        assert Tag.RED in result
+
+    def test_array_text_overlap_filter_clean(self, converter):
+        """Test ArrayOverlapFilter.clean() with text arrays."""
+        column = Column("notes", ARRAY(Text), nullable=False)
+        filters = converter.conv_array(column, "Notes")
+        overlap_filter = next(f for f in filters if isinstance(f, ArrayOverlapFilter))
+
+        result = overlap_filter.clean("note1,note2,note3")
+        assert result == ["note1", "note2", "note3"]
+
+    def test_array_not_contains_filter_clean_enum(self, converter):
+        """Test ArrayNotContainsFilter.clean() handles enum conversion."""
+
+        class Tag(enum.Enum):
+            RED = "red"
+
+        column = Column("tags", ARRAY(SQLAEnum(Tag)), nullable=False)
+        filters = converter.conv_array(column, "Tags")
+        not_contains_filter = next(
+            f for f in filters if isinstance(f, ArrayNotContainsFilter)
+        )
+
+        result = not_contains_filter.clean("RED")
+        assert result == Tag.RED
+
+    def test_array_equal_filter_clean_comma_separated(self, converter):
+        """Test ArrayEqualFilter.clean() handles comma-separated strings."""
+
+        class Tag(enum.Enum):
+            RED = "red"
+            BLUE = "blue"
+
+        column = Column("tags", ARRAY(SQLAEnum(Tag)), nullable=False)
+        filters = converter.conv_array(column, "Tags")
+        equal_filter = next(f for f in filters if isinstance(f, ArrayEqualFilter))
+
+        result = equal_filter.clean("RED,BLUE")
+        assert isinstance(result, list)
+        assert len(result) == 2
+        assert Tag.RED in result
+        assert Tag.BLUE in result

@@ -75,37 +75,63 @@
 
   {% elif filter.options %}
     {# Select dropdown for filters with predefined options #}
-    {% set select_items = [{"value": "", "text": "Select..."}] %}
     {# Get the actual filter object from filters list using filter.index #}
     {% set actual_filter = filters[filter.index] if filters and filter.index < filters|length else none %}
-    {% for opt_value, opt_label in filter.options %}
-      {# For enum filters, Flask-Admin provides enum values in options but expects enum names in form submission #}
-      {# Check if the actual filter object has enum_class attribute (for EnumEqualFilter, etc.) #}
-      {% if actual_filter and actual_filter.enum_class is defined and actual_filter.enum_class is not none %}
-        {# opt_value contains the enum value (e.g., "red") from column.type.enums #}
-        {# We need to find the enum name (e.g., "RED") for form submission #}
-        {# And use the enum value (e.g., "red") for display #}
-        {% set ns = namespace(enum_name=opt_value, display_label=opt_value) %}
-        {% for member in actual_filter.enum_class %}
-          {% if member.value == opt_value or member.name == opt_value %}
-            {% set ns.enum_name = opt_value %}
-            {% set ns.display_label = member.value %}
-          {% endif %}
-        {% endfor %}
-        {% set is_selected = (current_value and current_value.strip() == ns.enum_name|string) %}
-        {% set _ = select_items.append({"value": ns.enum_name, "text": ns.display_label, "selected": is_selected}) %}
-      {% else %}
-        {% set is_selected = (current_value and current_value.strip() == opt_value|string) %}
-        {% set _ = select_items.append({"value": opt_value, "text": opt_label, "selected": is_selected}) %}
-      {% endif %}
-    {% endfor %}
 
-    {{ govukSelect({
-      "id": filter_key,
-      "name": filter_key,
-      "label": {"text": filter.operation, "classes": "govuk-label--s"},
-      "items": select_items
-    }) }}
+    {# Check if this is an ArrayOverlapFilter (multi-select) #}
+    {% set is_array_overlap = actual_filter and actual_filter.__class__.__name__ == 'ArrayOverlapFilter' %}
+
+    {% if is_array_overlap %}
+      {# Render multi-select for array overlap filters #}
+      {% set select_items = [] %}
+      {% set selected_values = current_value.split(',') if current_value else [] %}
+      {% for opt_value, opt_label in filter.options %}
+        {% set is_selected = opt_value in selected_values %}
+        {% set _ = select_items.append({"value": opt_value, "text": opt_label, "selected": is_selected}) %}
+      {% endfor %}
+
+      {% set params = {
+        "id": filter_key,
+        "name": filter_key,
+        "label": {"text": filter.operation, "classes": "govuk-label--s"},
+        "multiple": true,
+        "select_items": select_items,
+        "attributes": {"data-remove-duplicates": "true"}
+      } %}
+
+      {% include 'select-with-search.html' %}
+    {% else %}
+      {# Standard single-select dropdown #}
+      {% set select_items = [{"value": "", "text": "Select..."}] %}
+      {% for opt_value, opt_label in filter.options %}
+        {# For enum filters, Flask-Admin provides enum values in options but expects enum names in form submission #}
+        {# Check if the actual filter object has enum_class attribute (for EnumEqualFilter, etc.) #}
+        {% if actual_filter and actual_filter.enum_class is defined and actual_filter.enum_class is not none %}
+          {# opt_value contains the enum value (e.g., "red") from column.type.enums #}
+          {# We need to find the enum name (e.g., "RED") for form submission #}
+          {# And use the enum value (e.g., "red") for display #}
+          {% set ns = namespace(enum_name=opt_value, display_label=opt_value) %}
+          {% for member in actual_filter.enum_class %}
+            {% if member.value == opt_value or member.name == opt_value %}
+              {% set ns.enum_name = opt_value %}
+              {% set ns.display_label = member.value %}
+            {% endif %}
+          {% endfor %}
+          {% set is_selected = (current_value and current_value.strip() == ns.enum_name|string) %}
+          {% set _ = select_items.append({"value": ns.enum_name, "text": ns.display_label, "selected": is_selected}) %}
+        {% else %}
+          {% set is_selected = (current_value and current_value.strip() == opt_value|string) %}
+          {% set _ = select_items.append({"value": opt_value, "text": opt_label, "selected": is_selected}) %}
+        {% endif %}
+      {% endfor %}
+
+      {{ govukSelect({
+        "id": filter_key,
+        "name": filter_key,
+        "label": {"text": filter.operation, "classes": "govuk-label--s"},
+        "items": select_items
+      }) }}
+    {% endif %}
 
   {% else %}
     {# Standard text input for text/number filters #}
@@ -394,7 +420,13 @@
                 <li>
                   <a class="moj-filter__tag" href="{{ admin_view._get_remove_filter_url(loop.index0, active_filters, return_url, sort_column, sort_desc, search, page_size, default_page_size, extra_args) }}">
                     <span class="govuk-visually-hidden">Remove this filter</span>
-                    {% if operation %}{{ operation }}: {% endif %}{{ value }}
+                    {% if operation %}{{ operation }}: {% endif %}
+                    {# Format comma-separated values nicely (for multi-select filters) #}
+                    {% if ',' in value|string %}
+                      {{ value.replace(',', ', ') }}
+                    {% else %}
+                      {{ value }}
+                    {% endif %}
                   </a>
                 </li>
                 {% if loop.last %}
