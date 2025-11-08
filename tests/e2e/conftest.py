@@ -1,8 +1,10 @@
 """Playwright fixtures for e2e tests."""
 
+import os
 import pytest
 from playwright.sync_api import sync_playwright
 import subprocess
+import tempfile
 import time
 import requests
 import sys
@@ -44,24 +46,52 @@ app.run(host='127.0.0.1', port={port}, debug=False, use_reloader=False)
 """
 
     # Start server in subprocess
-    # Use DEVNULL to prevent PIPE buffer deadlock after many requests
-    server_process = subprocess.Popen(
-        [sys.executable, "-c", runner_code],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-    )
+    # In CI environments (GitHub Actions, etc.), Docker/testcontainers can be slower,
+    # so we need to capture stderr to diagnose issues and use a longer timeout
+    is_ci = os.environ.get("CI") == "true" or os.environ.get("GITHUB_ACTIONS") == "true"
+    
+    # Create temporary files for stdout/stderr to diagnose startup issues
+    stderr_file = tempfile.NamedTemporaryFile(mode='w+', delete=False, suffix='.log')
+    stdout_file = tempfile.NamedTemporaryFile(mode='w+', delete=False, suffix='.log')
+    
+    try:
+        server_process = subprocess.Popen(
+            [sys.executable, "-c", runner_code],
+            stdout=stdout_file,
+            stderr=stderr_file,
+        )
 
-    # Wait for server to be ready
-    base_url = f"http://127.0.0.1:{port}"
-    for _ in range(50):  # Try for 5 seconds
-        try:
-            requests.get(f"{base_url}/admin/", timeout=1)
-            break
-        except (requests.ConnectionError, requests.Timeout):
-            time.sleep(0.1)
-    else:
-        server_process.kill()
-        raise RuntimeError("Flask server failed to start within 5 seconds")
+        # Wait for server to be ready
+        # Use longer timeout in CI (60 seconds) vs local (10 seconds)
+        max_attempts = 600 if is_ci else 100
+        base_url = f"http://127.0.0.1:{port}"
+        
+        for _ in range(max_attempts):
+            try:
+                requests.get(f"{base_url}/admin/", timeout=1)
+                break
+            except (requests.ConnectionError, requests.Timeout):
+                time.sleep(0.1)
+        else:
+            # Server failed to start - read error output
+            server_process.kill()
+            stderr_file.seek(0)
+            stdout_file.seek(0)
+            stderr_content = stderr_file.read()
+            stdout_content = stdout_file.read()
+            
+            timeout_seconds = max_attempts / 10
+            error_msg = f"Flask server failed to start within {timeout_seconds} seconds"
+            if stderr_content:
+                error_msg += f"\n\nStderr output:\n{stderr_content}"
+            if stdout_content:
+                error_msg += f"\n\nStdout output:\n{stdout_content}"
+            
+            raise RuntimeError(error_msg)
+    finally:
+        # Close the temp files
+        stderr_file.close()
+        stdout_file.close()
 
     yield base_url
 
@@ -71,6 +101,13 @@ app.run(host='127.0.0.1', port={port}, debug=False, use_reloader=False)
         server_process.wait(timeout=2)
     except subprocess.TimeoutExpired:
         server_process.kill()
+    
+    # Clean up temporary files
+    try:
+        os.unlink(stderr_file.name)
+        os.unlink(stdout_file.name)
+    except:
+        pass  # Best effort cleanup
 
 
 @pytest.fixture(scope="session")
