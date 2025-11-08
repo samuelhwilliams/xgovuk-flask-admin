@@ -5,26 +5,37 @@ from typing import Generator
 import pytest
 from flask_sqlalchemy_lite import SQLAlchemy
 from sqlalchemy.orm import Session
+from testcontainers.postgres import PostgresContainer
 
 from example.app import _create_app
 from tests.factories import UserFactory, AccountFactory, PostFactory
 
 # Store app components at module level for session scope
 _app_components = None
+_postgres_container = None
+
+
+def get_postgres_container():
+    """Get or create a PostgreSQL testcontainer for integration tests."""
+    global _postgres_container
+    if _postgres_container is None:
+        _postgres_container = PostgresContainer("postgres:16-alpine")
+        _postgres_container.start()
+    return _postgres_container
 
 
 def get_app_components():
     """Get or create app components (app, db, admin) for testing."""
     global _app_components
     if _app_components is None:
+        postgres = get_postgres_container()
         _app_components = _create_app(
             config_overrides={
                 "TESTING": True,
                 "SQLALCHEMY_ENGINES": {
                     "default": {
-                        "url": "sqlite:///:memory:",
+                        "url": postgres.get_connection_url().replace('+psycopg2', ''),
                         "echo": True,
-                        "connect_args": {"autocommit": False},
                     }
                 },
             },

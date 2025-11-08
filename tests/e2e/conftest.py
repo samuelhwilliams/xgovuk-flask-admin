@@ -30,10 +30,15 @@ def flask_server():
 import sys
 sys.path.insert(0, '{sys.path[0]}')
 from example.app import _create_app
+from testcontainers.postgres import PostgresContainer
+
+# Start PostgreSQL container
+postgres = PostgresContainer("postgres:16-alpine")
+postgres.start()
 
 app, db, admin = _create_app(config_overrides={{
     'TESTING': True,
-    'SQLALCHEMY_ENGINES': {{'default': 'sqlite:///:memory:'}},
+    'SQLALCHEMY_ENGINES': {{'default': postgres.get_connection_url().replace('+psycopg2', '')}},
 }})
 app.run(host='127.0.0.1', port={port}, debug=False, use_reloader=False)
 """

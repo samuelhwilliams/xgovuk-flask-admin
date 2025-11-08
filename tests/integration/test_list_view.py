@@ -5,6 +5,7 @@ from flask import Flask
 from flask_admin import Admin
 from flask_sqlalchemy_lite import SQLAlchemy
 from jinja2 import PackageLoader, ChoiceLoader, PrefixLoader
+from testcontainers.postgres import PostgresContainer
 
 from xgovuk_flask_admin.theme import XGovukFrontendTheme
 from xgovuk_flask_admin import XGovukModelView, XGovukFlaskAdmin
@@ -101,13 +102,23 @@ class TestListViewEmpty:
 class TestListViewCanEdit:
     """Test list view respects can_edit setting."""
 
+    @pytest.fixture(scope="class")
+    def postgres_container(self):
+        """Create PostgreSQL container for this test class."""
+        container = PostgresContainer("postgres:16-alpine")
+        container.start()
+        yield container
+        container.stop()
+
     @pytest.fixture
-    def app_with_readonly_view(self):
+    def app_with_readonly_view(self, postgres_container):
         """Create app with a read-only model view."""
         app = Flask(__name__)
         app.config["SECRET_KEY"] = "test-secret"
         app.config["TESTING"] = True
-        app.config["SQLALCHEMY_ENGINES"] = {"default": "sqlite:///:memory:"}
+        app.config["SQLALCHEMY_ENGINES"] = {
+            "default": postgres_container.get_connection_url().replace('+psycopg2', '')
+        }
 
         # Configure Jinja2 loaders
         app.jinja_options = {
@@ -185,12 +196,14 @@ class TestListViewCanEdit:
             assert "(view details)" not in html
 
     @pytest.fixture
-    def app_with_details_view(self):
+    def app_with_details_view(self, postgres_container):
         """Create app with a view-only model view (can_view_details=True, can_edit=False)."""
         app = Flask(__name__)
         app.config["SECRET_KEY"] = "test-secret"
         app.config["TESTING"] = True
-        app.config["SQLALCHEMY_ENGINES"] = {"default": "sqlite:///:memory:"}
+        app.config["SQLALCHEMY_ENGINES"] = {
+            "default": postgres_container.get_connection_url().replace('+psycopg2', '')
+        }
 
         # Configure Jinja2 loaders
         app.jinja_options = {
