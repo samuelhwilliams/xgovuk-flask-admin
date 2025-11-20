@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.5
+
+- Split header into two blocks in base template, to allow just overriding govukHeader
+
 ## 0.1.4
 
 - Add filters for array columns

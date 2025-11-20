@@ -12,8 +12,11 @@
 {% endblock head %}
 
 {% block header %}
+  {% block headerRow %}
   {{ govukHeader({"classes": "govuk-header--full-width-border"}) }}
+  {% endblock %}
 
+  {% block headerNav %}
   {% set service_nav_items = [] %}
   {% for item in admin_view.admin.menu() %}
     {% if item.is_category() %}
@@ -46,6 +49,7 @@
     "serviceUrl": url_for(admin_view.admin.endpoint ~ '.index'),
     "navigation": service_nav_items
   }) }}
+  {% endblock %}
 {% endblock %}
 
 {% block main %}
