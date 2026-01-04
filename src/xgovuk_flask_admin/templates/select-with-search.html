@@ -13,7 +13,7 @@
 #}
 
 <div class="govuk-form-group{% if params.errorMessage %} govuk-form-group--error{% endif %} gem-c-select-with-search">
-  <label class="govuk-label{% if params.label.classes %} {{ params.label.classes }}{% endif %}" for="{{ params.id }}">
+  <label class="govuk-label{% if params.label.classes %} {{ params.label.classes }}{% endif %}" for="{{ params.id }}" id="{{ params.id }}-label">
     {{ params.label.text }}
   </label>
 
