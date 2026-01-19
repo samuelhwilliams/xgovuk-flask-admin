@@ -2,6 +2,10 @@
   "name": "xgovuk-flask-admin",
   "private": true,
   "version": "1.0.0",
+  "engines": {
+    "node": ">=22.0.0 <23",
+    "npm": ">=10.0.0 <11"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,7 +14,7 @@
   "dependencies": {
     "@ministryofjustice/frontend": "^6.0.0",
     "choices.js": "^11.1.0",
-    "govuk-frontend": "^5.13.0",
+    "govuk-frontend": "^5.14.0",
     "moment": "^2.30.1"
   },
   "devDependencies": {
