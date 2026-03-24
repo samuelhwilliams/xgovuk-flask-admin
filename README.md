@@ -200,3 +200,7 @@ out of the box and will generally be progressively enhanced (ie functional witho
 components used in xgovuk-flask-admin are not 'officially' fully supported or fully accessible, and xgovuk-flask-admin
 applies some customisation to styling and interactions on some components in order to work with Flask-Admin and
 provide a (hopefully) more usable design and experience.
+
+## Links
+
+[![Hypercommit](https://img.shields.io/badge/Hypercommit-DB2475)](https://hypercommit.com/xgovuk-flask-admin)
