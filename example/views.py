@@ -1,7 +1,20 @@
 from flask_admin import BaseView, expose
+from sqlalchemy import select
 from wtforms.validators import Email
 
 from xgovuk_flask_admin import XGovukModelView
+from xgovuk_flask_admin.filters import SelectWithSearchFilter
+
+
+def _user_options():
+    """Live DB lookup for the author select-with-search filter on PostModelView."""
+    from flask import current_app
+    from example.models import User
+
+    db = current_app.extensions["sqlalchemy"]
+    return [
+        (u.id, u.email) for u in db.session.scalars(select(User).order_by(User.email))
+    ]
 
 
 class UserModelView(XGovukModelView):
@@ -45,7 +58,23 @@ class PostModelView(XGovukModelView):
     can_edit = False
     can_view_details = True
 
-    column_filters = ["author", "published_at", "created_at"]
+    @property
+    def column_filters(self):
+        from example.models import Post
+
+        return [
+            SelectWithSearchFilter(
+                Post.author_id,
+                name="Author email",
+                predicate_builder=lambda col, value: col.in_(int(v) for v in value),
+                options=_user_options,
+                multiple=True,
+            ),
+            "author",
+            "published_at",
+            "created_at",
+        ]
+
     column_default_sort = "id"
 
     column_searchable_list = ["title", "content"]
