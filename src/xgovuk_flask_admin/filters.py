@@ -164,6 +164,51 @@ class ArrayEqualFilter(sqla_filters.BaseSQLAFilter):
         return "equals"
 
 
+class SelectWithSearchFilter(sqla_filters.BaseSQLAFilter):
+    """Filter rendered using the select-with-search component.
+
+    Options are supplied via the standard Flask-Admin ``options`` parameter,
+    which already supports a callable for per-request resolution. The matching
+    SQL predicate is supplied via ``predicate_builder``.
+    """
+
+    def __init__(
+        self,
+        column,
+        name,
+        predicate_builder,
+        options=None,
+        operation_name=None,
+        multiple=False,
+        **kwargs,
+    ):
+        super().__init__(column, name, options=options, **kwargs)
+        self.predicate_builder = predicate_builder
+        self.multiple = multiple
+        self.data_type = "select-with-search"
+
+        if not operation_name:
+            operation_name = "is" if not multiple else "is any of"
+
+        self._operation_name = operation_name
+
+    def clean(self, value):
+        if not self.multiple:
+            return value
+        if isinstance(value, str):
+            return [v.strip() for v in value.split(",") if v.strip()]
+        if isinstance(value, list):
+            return value
+        return [value]
+
+    def apply(self, query, value, alias=None):
+        column = self.get_column(alias)
+        return query.filter(self.predicate_builder(column, value))
+
+    def operation(self):
+        return self._operation_name
+
+
 class XGovukFilterConverter(sqla_filters.FilterConverter):
     """
     Custom filter converter for GOV.UK Flask Admin.

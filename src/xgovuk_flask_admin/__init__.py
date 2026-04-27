@@ -334,6 +334,13 @@ class XGovukModelView(ModelView):
             menu_icon_value=menu_icon_value,
         )
 
+    def _get_filter_groups(self):
+        """Re-resolve filter options on every render so callable ``options`` lambdas
+        (e.g. on :class:`SelectWithSearchFilter`) reflect the current DB state."""
+        if self._filters:
+            self._refresh_filters_cache()
+        return super()._get_filter_groups()
+
     def _get_list_filter_args(self):
         """
         Override to combine GOV.UK date input fields before processing filters
