@@ -1,5 +1,9 @@
 {% import 'admin/static.html' as admin_static with context %}
 
+{% macro render_field(form, field, kwargs={}, caller=None) %}
+    {{ field(params=kwargs) | safe }}
+{% endmacro %}
+
 {% macro render_form_fields(form, form_opts=None) %}
     {% if form.hidden_tag is defined %}
         {{ form.hidden_tag() }}

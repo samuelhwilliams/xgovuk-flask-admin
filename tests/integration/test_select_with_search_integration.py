@@ -71,8 +71,8 @@ def integration_app():
     # Create tables and add views
     with app.app_context():
         Base.metadata.create_all(db.engine)
-        admin.add_view(XGovukModelView(Author, db.session))
-        admin.add_view(XGovukModelView(Book, db.session))
+        admin.add_view(XGovukModelView(Author, db))
+        admin.add_view(XGovukModelView(Book, db))
 
     yield app, db, admin
 
@@ -273,8 +273,8 @@ class TestSelectWithSearchIntegration:
 
         with app.app_context():
             Base.metadata.create_all(db.engine)
-            admin.add_view(CustomAuthorView(Author, db.session))
-            admin.add_view(XGovukModelView(Book, db.session))
+            admin.add_view(CustomAuthorView(Author, db))
+            admin.add_view(XGovukModelView(Book, db))
 
             # Create test data
             author = Author(name="Test Author")
@@ -333,8 +333,8 @@ class TestSelectWithSearchIntegration:
 
         with app.app_context():
             Base.metadata.create_all(db.engine)
-            admin.add_view(CustomAuthorView(Author, db.session))
-            admin.add_view(XGovukModelView(Book, db.session))
+            admin.add_view(CustomAuthorView(Author, db))
+            admin.add_view(XGovukModelView(Book, db))
 
             # Create test data
             author = Author(name="Test Author")
@@ -390,7 +390,7 @@ class TestSelectWithSearchIntegration:
 
         with app.app_context():
             Base.metadata.create_all(db.engine)
-            view = CustomAuthorView(Author, db.session)
+            view = CustomAuthorView(Author, db)
             admin.add_view(view)
 
             # Trigger form scaffold (which calls _populate_implicit_form_args)

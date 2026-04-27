@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 
 from flask_admin.contrib.sqla import filters as sqla_filters
+from flask_admin.contrib.sqla.filters import FilterInList, FilterNotInList
 
 
 class DateAfterFilter(sqla_filters.DateGreaterFilter):
@@ -162,6 +163,51 @@ class ArrayEqualFilter(sqla_filters.BaseSQLAFilter):
 
     def operation(self):
         return "equals"
+
+
+class SelectWithSearchFilterInList(FilterInList):
+    """ "In list" filter rendered using the select-with-search component.
+
+    ``column`` accepts either a SQLAlchemy column / InstrumentedAttribute
+    (e.g. ``Grant.id``) or a dotted string path (e.g. ``"collection.grant.name"``)
+    matching Flask-Admin's standard ``column_filters`` API.
+
+    Options are supplied via the standard Flask-Admin ``options`` parameter,
+    which already supports a callable for per-request resolution.
+    """
+
+    def __init__(
+        self,
+        column,
+        name,
+        options=None,
+        multiple: bool = True,
+        **kwargs,
+    ):
+        super().__init__(column, name, options=options, **kwargs)
+        self.data_type = "select-with-search"
+        self.multiple = multiple
+
+
+class SelectWithSearchFilterNotInList(FilterNotInList):
+    """ "Not in list" filter rendered using the select-with-search component.
+
+    Behaves like :class:`SelectWithSearchFilterInList` but excludes rows whose
+    column value is in the selected set (and, matching Flask-Admin's
+    ``FilterNotInList``, also includes rows where the column is ``NULL``).
+    """
+
+    def __init__(
+        self,
+        column,
+        name,
+        options=None,
+        multiple: bool = True,
+        **kwargs,
+    ):
+        super().__init__(column, name, options=options, **kwargs)
+        self.data_type = "select-with-search"
+        self.multiple = multiple
 
 
 class XGovukFilterConverter(sqla_filters.FilterConverter):

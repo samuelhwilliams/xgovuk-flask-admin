@@ -307,7 +307,7 @@ async = [
 
 [[package]]
 name = "flask-admin"
-version = "2.0.0"
+version = "2.2.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "flask" },
@@ -316,9 +316,9 @@ dependencies = [
     { name = "werkzeug" },
     { name = "wtforms" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e4/78/7cf5a70ea875b1eb0aa26caa9954fa1c323dd808bebd5d28769b8715acea/flask_admin-2.0.0.tar.gz", hash = "sha256:c5878ab1ea92c9e8345c0e1a2cd15851f5ecf2e1616d7fb9158487769f188e81", size = 5528485, upload-time = "2025-10-25T08:57:20.083Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/61/08/63770603ea3184782d6996455dcf9520893db58e9bd9f3e346b52d91fcea/flask_admin-2.2.0.tar.gz", hash = "sha256:4a5b844789c10076da89320563600a7addf781e73ab315ae800521b3ec018509", size = 5145370, upload-time = "2026-05-07T09:18:01.969Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/41/d2/e54d4aa3c865e5ccf7d5e2853fcaea27674829ea81706e6d37b15d81f3e1/flask_admin-2.0.0-py3-none-any.whl", hash = "sha256:3b2dc1f13c2ec450e2c9197f58cd684be5b96a9497e1ffb9d9efb9f7f59825f9", size = 6458454, upload-time = "2025-10-25T08:57:17.749Z" },
+    { url = "https://files.pythonhosted.org/packages/81/80/e68f7b341303acd34eea4ec15428355b30300aecd90cc4f91cb9722a280b/flask_admin-2.2.0-py3-none-any.whl", hash = "sha256:a8cb0f484eefb60b1ed345105ebb7199664ff910c52f02081b7881c390f643d3", size = 6056010, upload-time = "2026-05-07T09:17:59.331Z" },
 ]
 
 [[package]]
@@ -1033,7 +1033,7 @@ wheels = [
 
 [[package]]
 name = "xgovuk-flask-admin"
-version = "0.1.7"
+version = "0.1.9"
 source = { editable = "." }
 dependencies = [
     { name = "beautifulsoup4" },
@@ -1069,7 +1069,7 @@ requires-dist = [
     { name = "beautifulsoup4", specifier = ">=4.14.2" },
     { name = "email-validator", specifier = ">=2.0.0" },
     { name = "flask", specifier = ">=3" },
-    { name = "flask-admin", specifier = ">=2.0.0rc1" },
+    { name = "flask-admin", specifier = ">=2.2.0" },
     { name = "govuk-frontend-jinja", specifier = "==3.10.0" },
     { name = "govuk-frontend-wtf", specifier = "==3.2.0" },
     { name = "markupsafe", specifier = ">=3.0.0" },

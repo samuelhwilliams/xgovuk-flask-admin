@@ -25,33 +25,6 @@ from jinja2 import PackageLoader, ChoiceLoader, PrefixLoader, FileSystemLoader
 _postgres_container = None
 
 
-class ProxySession:
-    """
-    We provide a live proxy to db.session here, so that any access is scoped to the `app_context` of the moment.
-    When we weren't using this and were passing `db.session` directly through to the model views below, it was
-    holding a single session (id:1) open and using that forever, rather than using request-scoped sessions. This
-    definitely feels very wrong and I suspect is a bug/bad practice recommendation in either flask-sqlalchemy-lite
-    or flask-admin.
-
-    This was discovered when adding the following config to `form_args` of one of the model views:
-
-        "query_factory": lambda: db.session.query(Organisation).filter_by(can_manage_grants=True),
-
-    This was causing some queries to be executed by flask-admin using the global/permanent session (id:1), and
-    anything using that query factory to use request-scoped sessions. This was causing errors in SQLAlchemy when
-    trying to persist certain changes.
-
-    Using this proxy, initial set up will use the app context from `create_app`, but then any queries that are fired
-    off during requests will use the request-scoped session.
-    """
-
-    def __init__(self, db_: SQLAlchemy) -> None:
-        self.db = db_
-
-    def __getattr__(self, name):  # type: ignore[no-untyped-def]
-        return getattr(self.db.session, name)
-
-
 def get_postgres_container():
     """Get or create a PostgreSQL testcontainer."""
     global _postgres_container
@@ -128,9 +101,9 @@ def _create_app(config_overrides=None, seed: bool = True):
     # Create tables and add views
     with app.app_context():
         Base.metadata.create_all(db.engine)
-        admin.add_view(UserModelView(User, ProxySession(db), category="Models"))
-        admin.add_view(PostModelView(Post, ProxySession(db), category="Models"))
-        admin.add_view(AccountModelView(Account, ProxySession(db), category="Models"))
+        admin.add_view(UserModelView(User, db, category="Models"))
+        admin.add_view(PostModelView(Post, db, category="Models"))
+        admin.add_view(AccountModelView(Account, db, category="Models"))
         admin.add_view(CustomView(name="Custom View", endpoint="custom"))
 
     if seed:

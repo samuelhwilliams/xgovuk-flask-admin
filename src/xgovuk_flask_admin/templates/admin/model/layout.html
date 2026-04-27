@@ -73,6 +73,31 @@
       "classes": "govuk-input--width-20"
     }) }}
 
+  {% elif filter.type == 'select-with-search' %}
+    {% set actual_filter = filters[filter.index] if filters and filter.index < filters|length else none %}
+    {% set is_multiple = actual_filter and actual_filter.multiple %}
+    {% set selected_values = current_value.split(',') if (current_value and is_multiple) else ([current_value] if current_value else []) %}
+
+    {% set select_items = [] %}
+    {% if not is_multiple %}
+      {% set _ = select_items.append({"value": "", "text": "Select..."}) %}
+    {% endif %}
+    {% for opt_value, opt_label in (filter.options or []) %}
+      {% set is_selected = (opt_value|string) in selected_values %}
+      {% set _ = select_items.append({"value": opt_value, "text": opt_label, "selected": is_selected}) %}
+    {% endfor %}
+
+    {% set params = {
+      "id": filter_key,
+      "name": filter_key,
+      "label": {"text": filter.operation, "classes": "govuk-label--s"},
+      "multiple": is_multiple,
+      "select_items": select_items,
+      "attributes": {"data-remove-duplicates": "true"} if is_multiple else {}
+    } %}
+
+    {% include 'select-with-search.html' %}
+
   {% elif filter.options %}
     {# Select dropdown for filters with predefined options #}
     {# Get the actual filter object from filters list using filter.index #}
@@ -417,16 +442,27 @@
                   <h3 class="govuk-heading-s govuk-!-margin-bottom-0">{{ flt_name }}</h3>
                   <ul class="moj-filter-tags">
                 {% endif %}
+                {# Resolve raw filter values to their option labels when the underlying
+                   filter has an options list (e.g. SelectWithSearchFilterInList, ArrayOverlapFilter). #}
+                {% set option_map = {} %}
+                {% if filters and idx < filters|length %}
+                  {% set opts = filters[idx].get_options(admin_view) %}
+                  {% if opts %}
+                    {% for opt_value, opt_label in opts %}
+                      {% set _ = option_map.update({opt_value|string: opt_label}) %}
+                    {% endfor %}
+                  {% endif %}
+                {% endif %}
+                {% set raw_parts = value.split(',') if ',' in value|string else [value|string] %}
+                {% set display_parts = [] %}
+                {% for part in raw_parts %}
+                  {% set _ = display_parts.append(option_map.get(part|trim, part)) %}
+                {% endfor %}
                 <li>
                   <a class="moj-filter__tag" href="{{ admin_view._get_remove_filter_url(loop.index0, active_filters, return_url, sort_column, sort_desc, search, page_size, default_page_size, extra_args) }}">
                     <span class="govuk-visually-hidden">Remove this filter</span>
                     {% if operation %}{{ operation }}: {% endif %}
-                    {# Format comma-separated values nicely (for multi-select filters) #}
-                    {% if ',' in value|string %}
-                      {{ value.replace(',', ', ') }}
-                    {% else %}
-                      {{ value }}
-                    {% endif %}
+                    {{ display_parts|join(', ') }}
                   </a>
                 </li>
                 {% if loop.last %}

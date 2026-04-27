@@ -22,9 +22,7 @@ from xgovuk_flask_admin.assets import (
     ROOT_DIR,
 )
 from xgovuk_flask_admin.fields import ArrayTextAreaField
-from xgovuk_flask_admin.filters import (
-    XGovukFilterConverter,
-)
+from xgovuk_flask_admin.filters import XGovukFilterConverter
 from xgovuk_flask_admin.pagination import govuk_pagination_params_builder
 from xgovuk_flask_admin.widgets import (
     GovSelectWithSearch,
@@ -333,6 +331,13 @@ class XGovukModelView(ModelView):
             menu_icon_type=menu_icon_type,
             menu_icon_value=menu_icon_value,
         )
+
+    def _get_filter_groups(self):
+        """Re-resolve filter options on every render so callable ``options`` lambdas
+        (e.g. on :class:`SelectWithSearchFilterInList`) reflect the current DB state."""
+        if self._filters:
+            self._refresh_filters_cache()
+        return super()._get_filter_groups()
 
     def _get_list_filter_args(self):
         """
