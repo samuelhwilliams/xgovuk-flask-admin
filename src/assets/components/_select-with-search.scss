@@ -71,17 +71,17 @@ $choices-button-dimension: 12px !default;
 
     .choices[data-type*="select-multiple"] .choices__button,
     .choices[data-type*="text"] .choices__button {
-        border-color: govuk.govuk-colour("black", $variant: "tint-80");
-        border-right: 1px solid govuk.govuk-colour("black", $variant: "tint-80");
+        border-color: govuk.govuk-colour("mid-grey");
+        border-right: 1px solid govuk.govuk-colour("mid-grey");
         padding: govuk.govuk-spacing(2) govuk.govuk-spacing(4)
             govuk.govuk-spacing(2) govuk.govuk-spacing(2);
         margin-right: 0;
 
         &:hover {
-            background-color: govuk.govuk-colour("black", $variant: "tint-80");
-            border-color: govuk.govuk-colour("black", $variant: "tint-25");
+            background-color: govuk.govuk-colour("mid-grey");
+            border-color: govuk.govuk-colour("dark-grey");
             box-shadow: 0 govuk.$govuk-border-width-form-element 0
-                govuk.govuk-colour("black", $variant: "tint-25");
+                govuk.govuk-colour("dark-grey");
         }
 
         &:focus {
@@ -151,9 +151,9 @@ $choices-button-dimension: 12px !default;
         border: 0;
         padding: 0 0 0 govuk.govuk-spacing(2);
         margin: govuk.govuk-spacing(2) govuk.govuk-spacing(2) 0 0;
-        background-color: govuk.govuk-colour("black", $variant: "tint-95");
+        background-color: govuk.govuk-colour("light-grey");
         box-shadow: 0 govuk.$govuk-border-width-form-element 0
-            govuk.govuk-colour("black", $variant: "tint-80");
+            govuk.govuk-colour("mid-grey");
         line-height: 1;
         color: govuk.$govuk-text-colour;
 
@@ -177,8 +177,7 @@ $choices-button-dimension: 12px !default;
     .choices__list--dropdown .choices__item,
     .choices__list[aria-expanded] .choices__item {
         position: relative;
-        border-bottom: 1px solid
-            govuk.govuk-colour("black", $variant: "tint-80");
+        border-bottom: 1px solid govuk.govuk-colour("mid-grey");
 
         &:last-child {
             border-bottom: 0;
@@ -198,8 +197,7 @@ $choices-button-dimension: 12px !default;
         color: govuk.govuk-colour("black");
         padding: govuk.govuk-spacing(6) govuk.govuk-spacing(2)
             govuk.govuk-spacing(2);
-        border-bottom: 1px solid
-            govuk.govuk-colour("black", $variant: "tint-80");
+        border-bottom: 1px solid govuk.govuk-colour("mid-grey");
         cursor: default;
     }
 }

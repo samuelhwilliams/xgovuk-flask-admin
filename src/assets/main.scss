@@ -1,10 +1,9 @@
 @use "govuk" with (
-    $govuk-functional-colours: (
-        "brand": #912b88,
-    ),
+    $govuk-new-organisation-colours: true,
     $govuk-assets-path: "assets/",
     $govuk-images-path: "images/",
     $govuk-fonts-path: "fonts/",
+    $govuk-brand-colour: #912b88,
     $govuk-page-width: 1240px
 );
 @forward "moj/all" with (
@@ -15,10 +14,6 @@
 @use "components/filters";
 @use "components/filter-layout";
 @use "components/select-with-search";
-
-:root {
-    --govuk-brand-colour: #912b88;
-}
 
 .xgovuk-fa-table__cell--compact {
     padding-top: 3px;

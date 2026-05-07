@@ -1,23 +1,21 @@
 {% extends 'govuk_frontend_jinja/template.html' %}
 {% from 'govuk_frontend_jinja/components/service-navigation/macro.html' import govukServiceNavigation %}
-{% from 'govuk_frontend_jinja/components/footer/macro.html' import govukFooter %}
 {% import 'admin/layout.html' as layout with context %}
 
 {% set containerClasses = '' %}
 {% set mainClasses = '' %}
 {% set assetPath = url_for('xgovuk_flask_admin.static', filename='').rstrip('/') %}
+{% set govukRebrand = true %}
 
 {% block head %}
   {{ xgovuk_flask_admin_include_css() | safe }}
 {% endblock head %}
 
-{% block govukHeader %}
+{% block header %}
   {% block headerRow %}
   {{ govukHeader({"classes": "govuk-header--full-width-border"}) }}
   {% endblock %}
-{% endblock %}
 
-{% block govukServiceNavigation %}
   {% block headerNav %}
   {% set service_nav_items = [] %}
   {% for item in admin_view.admin.menu() %}
@@ -54,29 +52,31 @@
   {% endblock %}
 {% endblock %}
 
-{% block govukFooter %}
-  {{ govukFooter({}) }}
-{% endblock %}
+{% block main %}
+  <div class="govuk-width-container {%- if containerClasses %} {{ containerClasses }}{% endif %}">
+    {% block beforeContent %}{% endblock %}
 
-{% block content %}
-  {% block action_panel %}
-    <div class="govuk-grid-row">
-      <div class="govuk-grid-column-two-thirds">
-        <h1 class="govuk-heading-l">Admin dashboard</h1>
-        <p class="govuk-body">
-          Use the navigation above to manage your data:
-        </p>
-        <ul class="govuk-list govuk-list--bullet">
-          <li>view and search records</li>
-          <li>create, edit or delete entries</li>
-          <li>filter and export data</li>
-        </ul>
-        <p class="govuk-body">
-          Override blocks in this template to customise the index for your service.
-        </p>
-      </div>
-    </div>
-  {% endblock %}
+    <main class="govuk-main-wrapper {%- if mainClasses %} {{ mainClasses }}{% endif %}" id="main-content" {%- if mainLang %} lang="{{ mainLang }}"{% endif %}>
+      {% block action_panel %}
+        <div class="govuk-grid-row">
+          <div class="govuk-grid-column-two-thirds">
+            <h1 class="govuk-heading-l">Admin dashboard</h1>
+            <p class="govuk-body">
+              Use the navigation above to manage your data:
+            </p>
+            <ul class="govuk-list govuk-list--bullet">
+              <li>view and search records</li>
+              <li>create, edit or delete entries</li>
+              <li>filter and export data</li>
+            </ul>
+            <p class="govuk-body">
+              Override blocks in this template to customise the index for your service.
+            </p>
+          </div>
+        </div>
+      {% endblock %}
+    </main>
+  </div>
 {% endblock %}
 
 {% block bodyEnd %}
