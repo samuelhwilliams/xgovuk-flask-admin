@@ -148,7 +148,7 @@ class TestListViewCanEdit:
             class ReadOnlyUserView(XGovukModelView):
                 can_edit = False
 
-            admin.add_view(ReadOnlyUserView(User, db.session))
+            admin.add_view(ReadOnlyUserView(User, db))
 
         yield app, db
 
@@ -234,7 +234,7 @@ class TestListViewCanEdit:
                 can_edit = False
                 can_view_details = True
 
-            admin.add_view(ViewOnlyUserView(User, db.session))
+            admin.add_view(ViewOnlyUserView(User, db))
 
         yield app, db
 

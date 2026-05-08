@@ -8,25 +8,25 @@ from xgovuk_flask_admin import XGovukModelView, XGovukAdminModelConverter
 class TestXGovukModelView:
     """Test XGovukModelView configuration and methods."""
 
-    def test_default_category(self, db_session):
+    def test_default_category(self, db):
         """Test that default category is set to 'Miscellaneous'."""
         from example.models import User
 
-        view = XGovukModelView(User, db_session)
+        view = XGovukModelView(User, db)
         assert view.category == "Miscellaneous"
 
-    def test_custom_category(self, db_session):
+    def test_custom_category(self, db):
         """Test that custom category can be set."""
         from example.models import User
 
-        view = XGovukModelView(User, db_session, category="Custom")
+        view = XGovukModelView(User, db, category="Custom")
         assert view.category == "Custom"
 
-    def test_uses_govuk_converter(self, db_session):
+    def test_uses_govuk_converter(self, db):
         """Test that XGovukAdminModelConverter is used."""
         from example.models import User
 
-        view = XGovukModelView(User, db_session)
+        view = XGovukModelView(User, db)
         assert view.model_form_converter == XGovukAdminModelConverter
 
 

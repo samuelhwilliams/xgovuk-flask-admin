@@ -59,7 +59,7 @@ class TestCustomEndpoint:
         # Create tables and add views
         with app.app_context():
             Base.metadata.create_all(db.engine)
-            admin.add_view(XGovukModelView(User, db.session))
+            admin.add_view(XGovukModelView(User, db))
 
         yield app, db
 
